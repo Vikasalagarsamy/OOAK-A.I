@@ -41,10 +41,10 @@ export async function query<T = any>(
   
   try {
     client = await pool.connect();
-    const result: QueryResult<T> = await client.query(text, params);
+    const result = await client.query(text, params);
     
     return {
-      data: result.rows,
+      data: result.rows as T[],
       success: true
     };
   } catch (error) {
@@ -75,9 +75,9 @@ export async function transaction<T>(
     // Create a query function that uses this client
     const transactionQuery = async <U = any>(text: string, params?: any[]) => {
       if (!client) throw new Error('Transaction client not available');
-      const result: QueryResult<U> = await client.query(text, params);
+      const result = await client.query(text, params);
       return {
-        data: result.rows,
+        data: result.rows as U[],
         success: true
       };
     };
