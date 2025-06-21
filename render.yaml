@@ -1,0 +1,53 @@
+services:
+  # OOAK.AI Frontend Service
+  - type: web
+    name: ooak-ai-frontend
+    env: node
+    plan: starter
+    buildCommand: npm install && npm run build
+    startCommand: npm start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: NEXT_PUBLIC_APP_NAME
+        value: OOAK.AI
+      - key: NEXT_PUBLIC_APP_URL
+        fromService:
+          type: web
+          name: ooak-ai-frontend
+          property: url
+      # Database connection will be set via Render dashboard
+      - key: DATABASE_URL
+        sync: false # Set this in Render dashboard
+      - key: POSTGRES_HOST
+        sync: false # Set this in Render dashboard  
+      - key: POSTGRES_PORT
+        value: "5432"
+      - key: POSTGRES_DB
+        sync: false # Set this in Render dashboard
+      - key: POSTGRES_USER
+        sync: false # Set this in Render dashboard
+      - key: POSTGRES_PASSWORD
+        sync: false # Set this in Render dashboard
+    
+  # PostgreSQL Database Service
+  - type: pgsql
+    name: ooak-ai-database
+    databaseName: ooak_ai_production
+    user: ooak_admin
+    plan: starter
+    # Database will be automatically provisioned
+
+# Optional: Background job service for AI processing
+# - type: worker
+#   name: ooak-ai-worker
+#   env: node
+#   buildCommand: npm install
+#   startCommand: node workers/ai-processor.js
+#   envVars:
+#     - key: NODE_ENV
+#       value: production
+#     - key: DATABASE_URL
+#       fromDatabase:
+#         name: ooak-ai-database
+#         property: connectionString 
