@@ -286,7 +286,7 @@ export default async function Dashboard() {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
               <div>
                 <h4 className="font-semibold text-blue-800 mb-2">Next Steps:</h4>
                 <ul className="text-sm text-blue-700 space-y-1">
@@ -303,6 +303,37 @@ export default async function Dashboard() {
                   <li>• <code>npm run db:populate</code> - Sync data</li>
                   <li>• <code>npm run db:backup</code> - Backup changes</li>
                 </ul>
+              </div>
+            </div>
+            
+            {/* Demo Links */}
+            <div className="border-t border-blue-200 pt-4">
+              <h4 className="font-semibold text-blue-800 mb-3">🔐 Role-Based System Demo:</h4>
+              <div className="flex gap-3 flex-wrap">
+                <a 
+                  href="/demo/sidebar" 
+                  target="_blank"
+                  className="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                >
+                  <span className="mr-2">🔐</span>
+                  Test Dynamic Sidebar
+                </a>
+                <a 
+                  href="/admin/permissions" 
+                  target="_blank"
+                  className="inline-flex items-center px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors"
+                >
+                  <span className="mr-2">⚙️</span>
+                  Admin Panel
+                </a>
+                <a 
+                  href="/leads" 
+                  target="_blank"
+                  className="inline-flex items-center px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
+                >
+                  <span className="mr-2">👥</span>
+                  Leads Management
+                </a>
               </div>
             </div>
           </CardContent>
