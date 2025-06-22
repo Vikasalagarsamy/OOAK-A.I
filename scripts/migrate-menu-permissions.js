@@ -41,8 +41,7 @@ async function migrateMenuPermissions() {
     const defaultMenuItems = `
       -- Core menu items
       INSERT INTO menu_items (name, path, icon, parent_id, sort_order, is_active) VALUES
-      ('Dashboard', '/dashboard', 'LayoutDashboard', NULL, 1, true),
-      ('Sales', '/sales', 'TrendingUp', NULL, 2, true),
+      ('Sales', '/sales', 'TrendingUp', NULL, 1, true),
       ('Leads', '/sales/leads', 'Users', (SELECT id FROM menu_items WHERE name = 'Sales' LIMIT 1), 1, true),
       ('Quotations', '/sales/quotations', 'FileText', (SELECT id FROM menu_items WHERE name = 'Sales' LIMIT 1), 2, true),
       ('Reports', '/reports', 'BarChart', NULL, 3, true)

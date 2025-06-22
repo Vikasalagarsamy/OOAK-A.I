@@ -100,8 +100,7 @@ ON CONFLICT (name) DO NOTHING;
 -- Insert default menu items if they don't exist
 INSERT INTO menu_items (name, path, icon, parent_id, sort_order, is_active)
 VALUES 
-    ('Dashboard', '/dashboard', 'LayoutDashboard', NULL, 1, true),
-    ('Sales', '/sales', 'TrendingUp', NULL, 2, true)
+    ('Sales', '/sales', 'TrendingUp', NULL, 1, true)
 ON CONFLICT DO NOTHING;
 
 -- Insert child menu items
@@ -135,4 +134,26 @@ SELECT
     true as can_view
 FROM sales_head sh
 CROSS JOIN menu_items mi
-ON CONFLICT (designation_id, menu_item_id) DO NOTHING; 
+ON CONFLICT (designation_id, menu_item_id) DO NOTHING;
+
+-- Remove Dashboard menu item and update sort orders
+DELETE FROM designation_menu_permissions
+WHERE menu_item_id IN (SELECT id FROM menu_items WHERE name = 'Dashboard');
+
+DELETE FROM menu_items 
+WHERE name = 'Dashboard';
+
+-- Update sort orders for remaining items
+WITH dashboard_order AS (
+  SELECT sort_order 
+  FROM menu_items 
+  WHERE name = 'Dashboard'
+)
+UPDATE menu_items 
+SET sort_order = sort_order - 1 
+WHERE sort_order > (SELECT sort_order FROM dashboard_order);
+
+-- Update menu items to start with Sales
+UPDATE menu_items 
+SET sort_order = 1 
+WHERE name = 'Sales' AND parent_id IS NULL; 

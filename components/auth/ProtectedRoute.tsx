@@ -15,33 +15,63 @@ export default function ProtectedRoute({ children, fallback }: ProtectedRoutePro
   const router = useRouter();
 
   useEffect(() => {
+    let mounted = true;
+
     const checkAuth = async () => {
       try {
         const response = await fetch('/api/auth/me', {
           credentials: 'include',
+          headers: {
+            'Cache-Control': 'no-cache',
+            'Pragma': 'no-cache'
+          }
         });
+
+        if (!mounted) return;
 
         if (response.ok) {
           const data = await response.json();
-          if (data.success) {
+          if (data.success && data.user) {
             setUser(data.user);
           } else {
-            window.location.href = '/login';
+            // Clear any stale state
+            setUser(null);
+            // Use router for client-side navigation
+            router.replace('/login');
           }
         } else {
-          window.location.href = '/login';
+          // Clear any stale state
+          setUser(null);
+          // Use router for client-side navigation
+          router.replace('/login');
         }
       } catch (error) {
         console.error('Auth check failed:', error);
-        window.location.href = '/login';
+        if (mounted) {
+          setUser(null);
+          router.replace('/login');
+        }
       } finally {
-        setLoading(false);
+        if (mounted) {
+          setLoading(false);
+        }
       }
     };
 
+    // Initial auth check
     checkAuth();
-  }, []);
 
+    // Set up periodic auth check every 5 minutes
+    const interval = setInterval(checkAuth, 5 * 60 * 1000);
+
+    // Cleanup function
+    return () => {
+      mounted = false;
+      clearInterval(interval);
+    };
+  }, [router]);
+
+  // Show loading state
   if (loading) {
     return (
       fallback || (
@@ -52,9 +82,11 @@ export default function ProtectedRoute({ children, fallback }: ProtectedRoutePro
     );
   }
 
+  // If no user, the useEffect will handle redirect
   if (!user) {
-    return null; // Will redirect to login
+    return null;
   }
 
+  // Render children with user context
   return <>{children}</>;
 } 

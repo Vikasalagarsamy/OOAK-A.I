@@ -7,6 +7,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import RoleGuard, { usePermissions } from '@/components/auth/RoleGuard';
 import { Permission } from '@/types/auth';
+import { TrendingUp, Users, CreditCard, BarChart2, Activity, Clock } from 'lucide-react';
 
 export default function DashboardContent() {
   const { user, loading, hasPermission, isAdmin } = usePermissions();
@@ -27,7 +28,7 @@ export default function DashboardContent() {
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-purple-600"></div>
+        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-600"></div>
       </div>
     );
   }
@@ -37,289 +38,168 @@ export default function DashboardContent() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <header className="bg-white shadow-sm border-b">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-16">
-            <div className="flex items-center">
-              <h1 className="text-2xl font-bold text-gray-900">OOAK</h1>
-              <Badge className="ml-3 bg-purple-100 text-purple-800">
-                Employee Portal
-              </Badge>
-            </div>
-            <div className="flex items-center space-x-4">
-              <span className="text-sm text-gray-600">
-                Welcome, {user.first_name} {user.last_name}
-              </span>
-              <Badge variant="outline">
-                {user.designation.name}
-              </Badge>
-              <Button 
-                onClick={handleLogout}
-                variant="outline"
-                size="sm"
-              >
-                Logout
-              </Button>
-            </div>
-          </div>
-        </div>
-      </header>
-
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
-          {/* Sidebar Navigation */}
-          <div className="lg:col-span-1">
-            <Card className="p-6">
-              <h2 className="text-lg font-semibold mb-4">Navigation</h2>
-              <nav className="space-y-2">
-                <Button 
-                  variant="ghost" 
-                  className="w-full justify-start"
-                  onClick={() => router.push('/dashboard')}
-                >
-                  Dashboard
-                </Button>
-
-                {/* Sales Navigation */}
-                <RoleGuard 
-                  requiredPermission={Permission.SALES_VIEW_LEADS}
-                  user={user}
-                >
-                  <div className="space-y-1">
-                    <p className="text-xs font-medium text-gray-500 uppercase tracking-wide px-3 py-2">
-                      Sales
-                    </p>
-                    <Button 
-                      variant="ghost" 
-                      className="w-full justify-start pl-6"
-                      onClick={() => alert('Leads page - Coming soon!')}
-                    >
-                      Leads
-                    </Button>
-                    <RoleGuard 
-                      requiredPermission={Permission.SALES_VIEW_QUOTATIONS}
-                      user={user}
-                    >
-                      <Button 
-                        variant="ghost" 
-                        className="w-full justify-start pl-6"
-                        onClick={() => alert('Quotations page - Coming soon!')}
-                      >
-                        Quotations
-                      </Button>
-                    </RoleGuard>
-                    <RoleGuard 
-                      requiredPermission={Permission.SALES_VIEW_REPORTS}
-                      user={user}
-                    >
-                      <Button 
-                        variant="ghost" 
-                        className="w-full justify-start pl-6"
-                        onClick={() => alert('Sales Reports - Coming soon!')}
-                      >
-                        Reports
-                      </Button>
-                    </RoleGuard>
-                  </div>
-                </RoleGuard>
-
-                {/* Accounting Navigation */}
-                <RoleGuard 
-                  requiredPermission={Permission.ACCOUNTING_VIEW_INVOICES}
-                  user={user}
-                >
-                  <div className="space-y-1">
-                    <p className="text-xs font-medium text-gray-500 uppercase tracking-wide px-3 py-2">
-                      Accounting
-                    </p>
-                    <Button 
-                      variant="ghost" 
-                      className="w-full justify-start pl-6"
-                      onClick={() => alert('Invoices page - Coming soon!')}
-                    >
-                      Invoices
-                    </Button>
-                    <RoleGuard 
-                      requiredPermission={Permission.ACCOUNTING_VIEW_PAYMENTS}
-                      user={user}
-                    >
-                      <Button 
-                        variant="ghost" 
-                        className="w-full justify-start pl-6"
-                        onClick={() => alert('Payments page - Coming soon!')}
-                      >
-                        Payments
-                      </Button>
-                    </RoleGuard>
-                  </div>
-                </RoleGuard>
-
-                {/* Admin Navigation */}
-                {isAdmin && (
-                  <div className="space-y-1">
-                    <p className="text-xs font-medium text-gray-500 uppercase tracking-wide px-3 py-2">
-                      Admin
-                    </p>
-                    <Button 
-                      variant="ghost" 
-                      className="w-full justify-start pl-6"
-                      onClick={() => alert('Employee Management - Coming soon!')}
-                    >
-                      Employees
-                    </Button>
-                    <Button 
-                      variant="ghost" 
-                      className="w-full justify-start pl-6"
-                      onClick={() => alert('System Settings - Coming soon!')}
-                    >
-                      Settings
-                    </Button>
-                  </div>
-                )}
-              </nav>
-            </Card>
-          </div>
-
-          {/* Main Content */}
-          <div className="lg:col-span-3">
-            <div className="space-y-6">
-              {/* Welcome Card */}
-              <Card className="p-6">
-                <h2 className="text-xl font-semibold mb-2">
-                  Welcome back, {user.first_name}!
-                </h2>
-                <p className="text-gray-600 mb-4">
-                  You're logged in as <strong>{user.designation.name}</strong>
-                </p>
-                <div className="flex flex-wrap gap-2">
-                  {user.permissions.map((permission) => (
-                    <Badge key={permission} variant="secondary" className="text-xs">
-                      {permission.split(':')[1]?.replace('_', ' ')}
-                    </Badge>
-                  ))}
-                </div>
-              </Card>
-
-              {/* Role-Based Content */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {/* Sales Dashboard */}
-                <RoleGuard 
-                  requiredPermission={Permission.SALES_VIEW_LEADS}
-                  user={user}
-                >
-                  <Card className="p-6">
-                    <h3 className="text-lg font-semibold mb-4">Sales Overview</h3>
-                    <div className="space-y-3">
-                      <div className="flex justify-between">
-                        <span className="text-gray-600">Active Leads</span>
-                        <span className="font-semibold">24</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-gray-600">Quotations Sent</span>
-                        <span className="font-semibold">12</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-gray-600">Conversion Rate</span>
-                        <span className="font-semibold text-green-600">73.2%</span>
-                      </div>
-                    </div>
-                  </Card>
-                </RoleGuard>
-
-                {/* Accounting Dashboard */}
-                <RoleGuard 
-                  requiredPermission={Permission.ACCOUNTING_VIEW_INVOICES}
-                  user={user}
-                >
-                  <Card className="p-6">
-                    <h3 className="text-lg font-semibold mb-4">Accounting Overview</h3>
-                    <div className="space-y-3">
-                      <div className="flex justify-between">
-                        <span className="text-gray-600">Pending Invoices</span>
-                        <span className="font-semibold">8</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-gray-600">Payments Due</span>
-                        <span className="font-semibold text-orange-600">₹2,45,000</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-gray-600">Collected This Month</span>
-                        <span className="font-semibold text-green-600">₹8,75,000</span>
-                      </div>
-                    </div>
-                  </Card>
-                </RoleGuard>
-
-                {/* Admin Dashboard */}
-                {isAdmin && (
-                  <>
-                    <Card className="p-6">
-                      <h3 className="text-lg font-semibold mb-4">System Overview</h3>
-                      <div className="space-y-3">
-                        <div className="flex justify-between">
-                          <span className="text-gray-600">Total Employees</span>
-                          <span className="font-semibold">45</span>
-                        </div>
-                        <div className="flex justify-between">
-                          <span className="text-gray-600">Active Branches</span>
-                          <span className="font-semibold">6</span>
-                        </div>
-                        <div className="flex justify-between">
-                          <span className="text-gray-600">System Health</span>
-                          <Badge className="bg-green-100 text-green-800">Excellent</Badge>
-                        </div>
-                      </div>
-                    </Card>
-
-                    <Card className="p-6">
-                      <h3 className="text-lg font-semibold mb-4">System Performance</h3>
-                      <div className="space-y-3">
-                        <div className="flex justify-between">
-                          <span className="text-gray-600">System Efficiency</span>
-                          <span className="font-semibold text-green-600">98.5%</span>
-                        </div>
-                        <div className="flex justify-between">
-                          <span className="text-gray-600">Response Time</span>
-                          <span className="font-semibold">2.3 min</span>
-                        </div>
-                        <div className="flex justify-between">
-                          <span className="text-gray-600">Processing Rate</span>
-                          <span className="font-semibold text-blue-600">94.2%</span>
-                        </div>
-                      </div>
-                    </Card>
-                  </>
-                )}
-              </div>
-
-              {/* Employee Profile */}
-              <Card className="p-6">
-                <h3 className="text-lg font-semibold mb-4">Your Profile</h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <label className="text-sm font-medium text-gray-600">Employee ID</label>
-                    <p className="font-semibold">{user.employee_id}</p>
-                  </div>
-                  <div>
-                    <label className="text-sm font-medium text-gray-600">Full Name</label>
-                    <p className="font-semibold">{user.first_name} {user.last_name}</p>
-                  </div>
-                  <div>
-                    <label className="text-sm font-medium text-gray-600">Email</label>
-                    <p className="font-semibold">{user.email || 'Not provided'}</p>
-                  </div>
-                  <div>
-                    <label className="text-sm font-medium text-gray-600">Designation</label>
-                    <p className="font-semibold">{user.designation.name}</p>
-                  </div>
-                </div>
-              </Card>
-            </div>
-          </div>
-        </div>
+    <div className="space-y-8">
+      {/* Welcome Section */}
+      <div>
+        <h1 className="text-2xl font-semibold text-gray-900">Welcome back, {user.first_name}!</h1>
+        <p className="mt-1 text-gray-600">Here's what's happening in your organization today.</p>
       </div>
+
+      {/* Overview Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {/* Sales Overview */}
+        <RoleGuard 
+          requiredPermission={Permission.SALES_VIEW_LEADS}
+          user={user}
+        >
+          <Card className="p-6 hover:shadow-lg transition-shadow duration-200">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-semibold text-gray-900">Sales Overview</h3>
+              <TrendingUp className="h-6 w-6 text-blue-500" />
+            </div>
+            <div className="space-y-4">
+              <div className="flex justify-between items-center">
+                <div>
+                  <p className="text-sm text-gray-600">Active Leads</p>
+                  <p className="text-2xl font-bold text-gray-900">24</p>
+                </div>
+                <Badge className="bg-blue-50 text-blue-700">+12% ↑</Badge>
+              </div>
+              <div className="flex justify-between items-center">
+                <div>
+                  <p className="text-sm text-gray-600">Quotations</p>
+                  <p className="text-2xl font-bold text-gray-900">12</p>
+                </div>
+                <Badge className="bg-green-50 text-green-700">73.2% ↑</Badge>
+              </div>
+            </div>
+          </Card>
+        </RoleGuard>
+
+        {/* Accounting Overview */}
+        <RoleGuard 
+          requiredPermission={Permission.ACCOUNTING_VIEW_INVOICES}
+          user={user}
+        >
+          <Card className="p-6 hover:shadow-lg transition-shadow duration-200">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-semibold text-gray-900">Financial Overview</h3>
+              <CreditCard className="h-6 w-6 text-emerald-500" />
+            </div>
+            <div className="space-y-4">
+              <div className="flex justify-between items-center">
+                <div>
+                  <p className="text-sm text-gray-600">Pending Invoices</p>
+                  <p className="text-2xl font-bold text-gray-900">8</p>
+                </div>
+                <p className="text-lg font-semibold text-orange-600">₹2,45,000</p>
+              </div>
+              <div className="flex justify-between items-center">
+                <div>
+                  <p className="text-sm text-gray-600">Monthly Collection</p>
+                  <p className="text-2xl font-bold text-emerald-600">₹8,75,000</p>
+                </div>
+                <Badge className="bg-emerald-50 text-emerald-700">On Track</Badge>
+              </div>
+            </div>
+          </Card>
+        </RoleGuard>
+
+        {/* System Overview */}
+        {isAdmin && (
+          <Card className="p-6 hover:shadow-lg transition-shadow duration-200">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-semibold text-gray-900">System Health</h3>
+              <Activity className="h-6 w-6 text-purple-500" />
+            </div>
+            <div className="space-y-4">
+              <div className="flex justify-between items-center">
+                <div>
+                  <p className="text-sm text-gray-600">System Efficiency</p>
+                  <p className="text-2xl font-bold text-gray-900">98.5%</p>
+                </div>
+                <Badge className="bg-purple-50 text-purple-700">Excellent</Badge>
+              </div>
+              <div className="flex justify-between items-center">
+                <div>
+                  <p className="text-sm text-gray-600">Response Time</p>
+                  <div className="flex items-center">
+                    <p className="text-2xl font-bold text-gray-900">2.3</p>
+                    <span className="ml-1 text-gray-600">min</span>
+                  </div>
+                </div>
+                <Badge className="bg-blue-50 text-blue-700">94.2% ↑</Badge>
+              </div>
+            </div>
+          </Card>
+        )}
+      </div>
+
+      {/* Organization Stats */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <Card className="p-6 hover:shadow-lg transition-shadow duration-200">
+          <div className="flex items-center justify-between mb-6">
+            <h3 className="text-lg font-semibold text-gray-900">Organization Overview</h3>
+            <Users className="h-6 w-6 text-indigo-500" />
+          </div>
+          <div className="grid grid-cols-2 gap-6">
+            <div>
+              <p className="text-sm text-gray-600">Total Employees</p>
+              <p className="text-2xl font-bold text-gray-900">45</p>
+            </div>
+            <div>
+              <p className="text-sm text-gray-600">Active Branches</p>
+              <p className="text-2xl font-bold text-gray-900">6</p>
+            </div>
+          </div>
+        </Card>
+
+        <Card className="p-6 hover:shadow-lg transition-shadow duration-200">
+          <div className="flex items-center justify-between mb-6">
+            <h3 className="text-lg font-semibold text-gray-900">Performance Metrics</h3>
+            <BarChart2 className="h-6 w-6 text-teal-500" />
+          </div>
+          <div className="grid grid-cols-2 gap-6">
+            <div>
+              <p className="text-sm text-gray-600">Processing Rate</p>
+              <div className="flex items-baseline">
+                <p className="text-2xl font-bold text-gray-900">94.2</p>
+                <span className="ml-1 text-sm text-gray-600">%</span>
+              </div>
+            </div>
+            <div>
+              <p className="text-sm text-gray-600">System Health</p>
+              <Badge className="mt-2 bg-emerald-50 text-emerald-700">Excellent</Badge>
+            </div>
+          </div>
+        </Card>
+      </div>
+
+      {/* User Profile Section */}
+      <Card className="p-6 hover:shadow-lg transition-shadow duration-200">
+        <div className="flex items-center justify-between mb-6">
+          <h3 className="text-lg font-semibold text-gray-900">Your Profile</h3>
+          <Clock className="h-6 w-6 text-gray-400" />
+        </div>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+          <div>
+            <p className="text-sm text-gray-600">Employee ID</p>
+            <p className="mt-1 font-medium text-gray-900">EMP-25-0001</p>
+          </div>
+          <div>
+            <p className="text-sm text-gray-600">Full Name</p>
+            <p className="mt-1 font-medium text-gray-900">Vikas Alagarsamy</p>
+          </div>
+          <div>
+            <p className="text-sm text-gray-600">Email</p>
+            <p className="mt-1 font-medium text-gray-900">vikas@ooak.photography</p>
+          </div>
+          <div>
+            <p className="text-sm text-gray-600">Role</p>
+            <Badge className="mt-2" variant="outline">MANAGING DIRECTOR</Badge>
+          </div>
+        </div>
+      </Card>
     </div>
   );
 } 

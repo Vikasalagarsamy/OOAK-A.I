@@ -136,7 +136,9 @@ export function Sidebar() {
 
   return (
     <nav className="w-64 bg-white border-r h-screen p-4 space-y-2">
-      {menuItems.map(item => renderMenuItem(item))}
+      {menuItems
+        .filter(item => item.name !== 'Dashboard')
+        .map(item => renderMenuItem(item))}
     </nav>
   );
 } 
