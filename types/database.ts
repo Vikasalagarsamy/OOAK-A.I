@@ -267,10 +267,11 @@ export interface CreateQuotationForm {
 export interface DashboardStats {
   total_leads: number;
   total_clients: number;
-  total_bookings: number;
+  total_events: number;
   total_revenue: number;
   pending_quotations: number;
-  active_projects: number;
+  leads_converted: number;
+  avg_quote_value: number;
 }
 
 export interface RecentActivity {

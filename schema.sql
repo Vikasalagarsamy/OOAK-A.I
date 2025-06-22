@@ -46,6 +46,58 @@ CREATE TABLE IF NOT EXISTS designation_menu_permissions (
     UNIQUE(designation_id, menu_item_id)
 );
 
+-- Leads Table (stores potential clients)
+CREATE TABLE IF NOT EXISTS leads (
+    id SERIAL PRIMARY KEY,
+    name VARCHAR(255) NOT NULL,
+    email VARCHAR(255),
+    phone VARCHAR(20),
+    status VARCHAR(50) NOT NULL DEFAULT 'new',
+    source VARCHAR(100),
+    notes TEXT,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Clients Table (stores confirmed clients)
+CREATE TABLE IF NOT EXISTS clients (
+    id SERIAL PRIMARY KEY,
+    name VARCHAR(255) NOT NULL,
+    email VARCHAR(255) NOT NULL UNIQUE,
+    phone VARCHAR(20),
+    status VARCHAR(50) NOT NULL DEFAULT 'active',
+    lead_id INTEGER REFERENCES leads(id),
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Bookings Table (stores wedding/event bookings)
+CREATE TABLE IF NOT EXISTS bookings (
+    id SERIAL PRIMARY KEY,
+    client_id INTEGER NOT NULL REFERENCES clients(id),
+    event_date DATE NOT NULL,
+    event_type VARCHAR(100) NOT NULL,
+    venue VARCHAR(255),
+    status VARCHAR(50) NOT NULL DEFAULT 'pending',
+    total_amount DECIMAL(10,2) NOT NULL DEFAULT 0,
+    paid_amount DECIMAL(10,2) NOT NULL DEFAULT 0,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Quotations Table (stores price quotes for potential clients)
+CREATE TABLE IF NOT EXISTS quotations (
+    id SERIAL PRIMARY KEY,
+    lead_id INTEGER REFERENCES leads(id),
+    client_id INTEGER REFERENCES clients(id),
+    total_amount DECIMAL(10,2) NOT NULL,
+    status VARCHAR(50) NOT NULL DEFAULT 'pending',
+    valid_until DATE,
+    notes TEXT,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
 -- Function to update timestamps
 CREATE OR REPLACE FUNCTION update_updated_at_column()
 RETURNS TRIGGER AS $$
@@ -60,6 +112,10 @@ DROP TRIGGER IF EXISTS update_menu_items_modtime ON menu_items;
 DROP TRIGGER IF EXISTS update_designation_menu_permissions_modtime ON designation_menu_permissions;
 DROP TRIGGER IF EXISTS update_designations_modtime ON designations;
 DROP TRIGGER IF EXISTS update_employees_modtime ON employees;
+DROP TRIGGER IF EXISTS update_leads_modtime ON leads;
+DROP TRIGGER IF EXISTS update_clients_modtime ON clients;
+DROP TRIGGER IF EXISTS update_bookings_modtime ON bookings;
+DROP TRIGGER IF EXISTS update_quotations_modtime ON quotations;
 
 -- Create triggers for updating timestamps
 CREATE TRIGGER update_menu_items_modtime
@@ -82,15 +138,43 @@ CREATE TRIGGER update_employees_modtime
     FOR EACH ROW
     EXECUTE FUNCTION update_updated_at_column();
 
+CREATE TRIGGER update_leads_modtime
+    BEFORE UPDATE ON leads
+    FOR EACH ROW
+    EXECUTE FUNCTION update_updated_at_column();
+
+CREATE TRIGGER update_clients_modtime
+    BEFORE UPDATE ON clients
+    FOR EACH ROW
+    EXECUTE FUNCTION update_updated_at_column();
+
+CREATE TRIGGER update_bookings_modtime
+    BEFORE UPDATE ON bookings
+    FOR EACH ROW
+    EXECUTE FUNCTION update_updated_at_column();
+
+CREATE TRIGGER update_quotations_modtime
+    BEFORE UPDATE ON quotations
+    FOR EACH ROW
+    EXECUTE FUNCTION update_updated_at_column();
+
 -- Drop existing indexes if they exist
 DROP INDEX IF EXISTS idx_menu_items_parent_id;
 DROP INDEX IF EXISTS idx_designation_menu_permissions_designation_id;
 DROP INDEX IF EXISTS idx_designation_menu_permissions_menu_item_id;
+DROP INDEX IF EXISTS idx_leads_status;
+DROP INDEX IF EXISTS idx_clients_status;
+DROP INDEX IF EXISTS idx_bookings_status;
+DROP INDEX IF EXISTS idx_quotations_status;
 
 -- Create indexes for better performance
 CREATE INDEX idx_menu_items_parent_id ON menu_items(parent_id);
 CREATE INDEX idx_designation_menu_permissions_designation_id ON designation_menu_permissions(designation_id);
 CREATE INDEX idx_designation_menu_permissions_menu_item_id ON designation_menu_permissions(menu_item_id);
+CREATE INDEX idx_leads_status ON leads(status);
+CREATE INDEX idx_clients_status ON clients(status);
+CREATE INDEX idx_bookings_status ON bookings(status);
+CREATE INDEX idx_quotations_status ON quotations(status);
 
 -- Insert default SALES HEAD designation if it doesn't exist
 INSERT INTO designations (name, description)
