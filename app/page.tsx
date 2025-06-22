@@ -19,7 +19,7 @@ async function getDashboardData() {
       query('SELECT COUNT(*) as count FROM companies'),
       query('SELECT COUNT(*) as count FROM branches'),
       query('SELECT COUNT(*) as count FROM employees'),
-      query('SELECT COUNT(*) as count FROM lead_drafts WHERE lead_drafts.id IS NOT NULL'),
+      query('SELECT COUNT(*) as count FROM leads'),
       query('SELECT COUNT(*) as count FROM quotations'),
       query('SELECT COUNT(*) as count FROM whatsapp_messages'),
       query('SELECT COUNT(*) as count FROM call_transcriptions'),
