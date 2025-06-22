@@ -23,16 +23,27 @@ export async function GET(request: Request) {
     // Get current user
     const user = await AuthService.getCurrentUser();
     
-    if (!user || !user.designation.id) {
+    if (!user) {
       return NextResponse.json(
         { error: 'Not authenticated' },
         { status: 401 }
       );
     }
 
+    // Get designation ID from query string
+    const url = new URL(request.url);
+    const designationId = url.searchParams.get('designationId');
+
+    if (!designationId) {
+      return NextResponse.json(
+        { error: 'Designation ID is required' },
+        { status: 400 }
+      );
+    }
+
     const pool = getDbPool();
     
-    // Get menu permissions for the user's designation
+    // Get menu permissions for the specified designation
     const result = await pool.query<MenuItem>(`
       WITH RECURSIVE menu_tree AS (
         -- Get parent menu items with permissions
@@ -80,7 +91,7 @@ export async function GET(request: Request) {
       SELECT *
       FROM menu_tree
       ORDER BY level, sort_order, name;
-    `, [user.designation.id]);
+    `, [designationId]);
 
     if (!result.rows) {
       return NextResponse.json(

@@ -83,10 +83,16 @@ export default function MenuPermissionsPage() {
       
       setLoading(true);
       try {
-        const response = await fetch(`/api/admin/menu-permissions?designationId=${parseInt(selectedDesignation, 10)}`);
+        console.log('Fetching menu items for designation:', selectedDesignation);
+        const response = await fetch(`/api/admin/menu-permissions?designationId=${selectedDesignation}`);
         const data = await response.json();
+        console.log('Menu items API response:', data);
+        
         if (data.success) {
           setMenuItems(data.items);
+          console.log('Updated menu items state:', data.items);
+        } else {
+          throw new Error(data.error || 'Failed to fetch menu items');
         }
       } catch (error) {
         console.error('Error fetching menu items:', error);
