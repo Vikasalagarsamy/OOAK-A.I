@@ -29,6 +29,11 @@ services:
         sync: false # Set this in Render dashboard
       - key: POSTGRES_PASSWORD
         sync: false # Set this in Render dashboard
+      # JWT Authentication
+      - key: JWT_SECRET
+        generateValue: true # Auto-generate secure JWT secret
+      - key: NEXT_PUBLIC_JWT_SECRET
+        generateValue: true # Auto-generate secure JWT secret for client
     
   # PostgreSQL Database Service
   - type: pgsql
