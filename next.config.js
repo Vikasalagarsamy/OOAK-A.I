@@ -10,6 +10,10 @@ const nextConfig = {
         destination: '/authenticated/dashboard'
       },
       {
+        source: '/admin/menu-permissions',
+        destination: '/authenticated/admin/menu-permissions'
+      },
+      {
         source: '/admin/:path*',
         destination: '/authenticated/admin/:path*'
       }
