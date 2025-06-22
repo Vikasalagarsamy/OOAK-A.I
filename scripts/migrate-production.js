@@ -1,6 +1,7 @@
 const { execSync } = require('child_process');
 const fs = require('fs');
 const path = require('path');
+const { migrateMenuPermissions } = require('./migrate-menu-permissions');
 
 async function migrateProductionDatabase() {
   console.log('🚀 Starting OOAK.AI Production Database Migration...');
@@ -93,6 +94,10 @@ async function migrateProductionDatabase() {
       
       console.log('✅ Basic schema created successfully!');
     }
+
+    // Run menu permissions migration
+    console.log('🔄 Running menu permissions migration...');
+    await migrateMenuPermissions();
     
     console.log('🎉 OOAK.AI Production Database is ready!');
     console.log('🚀 Your AI-powered wedding photography platform is live!');
