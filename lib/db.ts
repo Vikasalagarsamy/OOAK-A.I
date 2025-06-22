@@ -1,30 +1,69 @@
 import { Pool, PoolClient, QueryResult } from 'pg';
 
-// Standardized database configuration (uses production database for all environments)
-const getDbConfig = () => {
-  // Always use production database - dev pulls from production
-  if (process.env.DATABASE_URL) {
+// Define PostgreSQL error type
+interface PostgresError extends Error {
+  code?: string;
+  detail?: string;
+  hint?: string;
+  where?: string;
+}
+
+// Define config types
+interface ProductionConfig {
+  connectionString: string;
+  ssl: { rejectUnauthorized: boolean };
+  max: number;
+  idleTimeoutMillis: number;
+  connectionTimeoutMillis: number;
+}
+
+interface DevelopmentConfig {
+  host: string;
+  port: number;
+  database: string;
+  user: string;
+  password: string;
+  ssl: boolean;
+  max: number;
+  idleTimeoutMillis: number;
+  connectionTimeoutMillis: number;
+}
+
+type DbConfig = ProductionConfig | DevelopmentConfig;
+
+// Standardized database configuration
+const getDbConfig = (): DbConfig => {
+  // Use DATABASE_URL in production only
+  if (process.env.NODE_ENV === 'production' && process.env.DATABASE_URL) {
     return {
       connectionString: process.env.DATABASE_URL,
-      ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false,
-      max: process.env.NODE_ENV === 'production' ? 20 : 10, // Lower connections for dev
+      ssl: { rejectUnauthorized: false },
+      max: 20,
       idleTimeoutMillis: 30000,
       connectionTimeoutMillis: 10000,
     };
   }
   
-  // Fallback to individual environment variables
-  return {
+  // Use local config for development
+  const config: DevelopmentConfig = {
     host: process.env.POSTGRES_HOST || 'localhost',
     port: parseInt(process.env.POSTGRES_PORT || '5432'),
-    database: process.env.POSTGRES_DB || 'ooak_ai_db',
-    user: process.env.POSTGRES_USER || 'postgres',
+    database: process.env.POSTGRES_DB || 'ooak_ai_dev',
+    user: process.env.POSTGRES_USER || 'vikasalagarsamy', // Default to your username
     password: process.env.POSTGRES_PASSWORD || '',
-    ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false,
-    max: process.env.NODE_ENV === 'production' ? 20 : 10,
+    ssl: false,
+    max: 10,
     idleTimeoutMillis: 30000,
     connectionTimeoutMillis: 10000,
   };
+
+  // Log the configuration (without password)
+  console.log('📊 Database Configuration:', {
+    ...config,
+    password: config.password ? '****' : '',
+  });
+
+  return config;
 };
 
 // Create connection pool singleton
@@ -37,11 +76,18 @@ function getPool(): Pool {
     
     pool.on('connect', () => {
       const env = process.env.NODE_ENV || 'development';
-      console.log(`🔗 Connected to OOAK.AI Production Database (${env} mode)`);
+      const user = 'user' in config ? config.user : 'via connection string';
+      console.log(`🔗 Connected to PostgreSQL Database (${env} mode) as ${user}`);
     });
     
-    pool.on('error', (err) => {
-      console.error('❌ Database pool error:', err);
+    pool.on('error', (err: PostgresError) => {
+      console.error('❌ Database pool error:', {
+        code: err.code,
+        message: err.message,
+        detail: err.detail,
+        hint: err.hint,
+        where: err.where
+      });
     });
     
     // Graceful shutdown
