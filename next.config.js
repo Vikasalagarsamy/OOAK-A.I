@@ -3,10 +3,6 @@ const nextConfig = {
   env: {
     CUSTOM_KEY: 'OOAK-AI-Platform',
   },
-  experimental: {
-    appDir: true,
-    serverActions: true,
-  },
   async headers() {
     return [
       {

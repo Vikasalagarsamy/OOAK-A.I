@@ -8,40 +8,34 @@ export async function GET(request: NextRequest) {
 
     // Parallel queries for better performance
     const [
-      leadsResult,
-      clientsResult,
-      bookingsResult,
-      revenueResult,
-      quotationsResult
+      employeesResult,
+      designationsResult,
+      menuItemsResult,
+      permissionsResult
     ] = await Promise.all([
-      // Total leads
-      query('SELECT COUNT(*) as total FROM leads WHERE created_at >= NOW() - INTERVAL \'30 days\''),
+      // Total employees
+      query('SELECT COUNT(*) as total FROM employees'),
       
-      // Total clients
-      query('SELECT COUNT(*) as total FROM clients WHERE status = \'active\' AND created_at >= NOW() - INTERVAL \'30 days\''),
+      // Total designations
+      query('SELECT COUNT(*) as total FROM designations'),
       
-      // Active bookings
-      query('SELECT COUNT(*) as total FROM bookings WHERE status IN (\'confirmed\', \'in_progress\') AND event_date >= NOW()'),
+      // Total menu items
+      query('SELECT COUNT(*) as total FROM menu_items'),
       
-      // Total revenue (last 30 days)
-      query('SELECT COALESCE(SUM(total_amount), 0) as total FROM bookings WHERE status = \'completed\' AND created_at >= NOW() - INTERVAL \'30 days\''),
-      
-      // Pending quotations
-      query('SELECT COUNT(*) as total FROM quotations WHERE status = \'pending\' AND created_at >= NOW() - INTERVAL \'7 days\'')
+      // Total permissions
+      query('SELECT COUNT(*) as total FROM designation_menu_permissions')
     ]);
 
     // Check if all queries were successful
-    if (!leadsResult.success || !clientsResult.success || !bookingsResult.success || !revenueResult.success || !quotationsResult.success) {
+    if (!employeesResult.success || !designationsResult.success || !menuItemsResult.success || !permissionsResult.success) {
       throw new Error('Failed to fetch dashboard data');
     }
 
     const stats: DashboardStats = {
-      total_leads: parseInt(leadsResult.data?.[0]?.total || '0'),
-      total_clients: parseInt(clientsResult.data?.[0]?.total || '0'),
-      total_bookings: parseInt(bookingsResult.data?.[0]?.total || '0'),
-      total_revenue: parseFloat(revenueResult.data?.[0]?.total || '0'),
-      pending_quotations: parseInt(quotationsResult.data?.[0]?.total || '0'),
-      active_projects: parseInt(bookingsResult.data?.[0]?.total || '0'), // Same as active bookings
+      total_employees: parseInt(employeesResult.data?.[0]?.total || '0'),
+      total_designations: parseInt(designationsResult.data?.[0]?.total || '0'),
+      total_menu_items: parseInt(menuItemsResult.data?.[0]?.total || '0'),
+      total_permissions: parseInt(permissionsResult.data?.[0]?.total || '0')
     };
 
     console.log('✅ Dashboard statistics fetched successfully:', stats);

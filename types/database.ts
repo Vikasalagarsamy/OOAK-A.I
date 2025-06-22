@@ -265,12 +265,10 @@ export interface CreateQuotationForm {
 
 // Dashboard data types
 export interface DashboardStats {
-  total_leads: number;
-  total_clients: number;
-  total_bookings: number;
-  total_revenue: number;
-  pending_quotations: number;
-  active_projects: number;
+  total_employees: number;
+  total_designations: number;
+  total_menu_items: number;
+  total_permissions: number;
 }
 
 export interface RecentActivity {

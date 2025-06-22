@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -8,10 +8,33 @@ import { Button } from '@/components/ui/button';
 import RoleGuard, { usePermissions } from '@/components/auth/RoleGuard';
 import { Permission } from '@/types/auth';
 import { TrendingUp, Users, CreditCard, BarChart2, Activity, Clock } from 'lucide-react';
+import { DashboardStats } from '@/types/database';
 
 export default function DashboardContent() {
   const { user, loading, hasPermission, isAdmin } = usePermissions();
   const router = useRouter();
+  const [stats, setStats] = useState<DashboardStats | null>(null);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchStats = async () => {
+      try {
+        const response = await fetch('/api/dashboard');
+        const data = await response.json();
+        
+        if (data.success) {
+          setStats(data.data);
+        } else {
+          setError(data.error || 'Failed to fetch dashboard data');
+        }
+      } catch (error) {
+        setError('Error fetching dashboard data');
+        console.error('Dashboard fetch error:', error);
+      }
+    };
+
+    fetchStats();
+  }, []);
 
   const handleLogout = async () => {
     try {
@@ -45,65 +68,54 @@ export default function DashboardContent() {
         <p className="mt-1 text-gray-600">Here's what's happening in your organization today.</p>
       </div>
 
+      {error && (
+        <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded relative" role="alert">
+          <strong className="font-bold">Error: </strong>
+          <span className="block sm:inline">{error}</span>
+        </div>
+      )}
+
       {/* Overview Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {/* Sales Overview */}
-        <RoleGuard 
-          requiredPermission={Permission.SALES_VIEW_LEADS}
-          user={user}
-        >
-          <Card className="p-6 hover:shadow-lg transition-shadow duration-200">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-semibold text-gray-900">Sales Overview</h3>
-              <TrendingUp className="h-6 w-6 text-blue-500" />
-            </div>
-            <div className="space-y-4">
-              <div className="flex justify-between items-center">
-                <div>
-                  <p className="text-sm text-gray-600">Active Leads</p>
-                  <p className="text-2xl font-bold text-gray-900">24</p>
-                </div>
-                <Badge className="bg-blue-50 text-blue-700">+12% ↑</Badge>
+        {/* Organization Stats */}
+        <Card className="p-6 hover:shadow-lg transition-shadow duration-200">
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-lg font-semibold text-gray-900">Organization Overview</h3>
+            <Users className="h-6 w-6 text-blue-500" />
+          </div>
+          <div className="space-y-4">
+            <div className="flex justify-between items-center">
+              <div>
+                <p className="text-sm text-gray-600">Total Employees</p>
+                <p className="text-2xl font-bold text-gray-900">{stats?.total_employees || 0}</p>
               </div>
-              <div className="flex justify-between items-center">
-                <div>
-                  <p className="text-sm text-gray-600">Quotations</p>
-                  <p className="text-2xl font-bold text-gray-900">12</p>
-                </div>
-                <Badge className="bg-green-50 text-green-700">73.2% ↑</Badge>
+              <div>
+                <p className="text-sm text-gray-600">Total Designations</p>
+                <p className="text-2xl font-bold text-gray-900">{stats?.total_designations || 0}</p>
               </div>
             </div>
-          </Card>
-        </RoleGuard>
+          </div>
+        </Card>
 
-        {/* Accounting Overview */}
-        <RoleGuard 
-          requiredPermission={Permission.ACCOUNTING_VIEW_INVOICES}
-          user={user}
-        >
-          <Card className="p-6 hover:shadow-lg transition-shadow duration-200">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-semibold text-gray-900">Financial Overview</h3>
-              <CreditCard className="h-6 w-6 text-emerald-500" />
-            </div>
-            <div className="space-y-4">
-              <div className="flex justify-between items-center">
-                <div>
-                  <p className="text-sm text-gray-600">Pending Invoices</p>
-                  <p className="text-2xl font-bold text-gray-900">8</p>
-                </div>
-                <p className="text-lg font-semibold text-orange-600">₹2,45,000</p>
+        {/* Menu Stats */}
+        <Card className="p-6 hover:shadow-lg transition-shadow duration-200">
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-lg font-semibold text-gray-900">Menu Overview</h3>
+            <BarChart2 className="h-6 w-6 text-emerald-500" />
+          </div>
+          <div className="space-y-4">
+            <div className="flex justify-between items-center">
+              <div>
+                <p className="text-sm text-gray-600">Total Menu Items</p>
+                <p className="text-2xl font-bold text-gray-900">{stats?.total_menu_items || 0}</p>
               </div>
-              <div className="flex justify-between items-center">
-                <div>
-                  <p className="text-sm text-gray-600">Monthly Collection</p>
-                  <p className="text-2xl font-bold text-emerald-600">₹8,75,000</p>
-                </div>
-                <Badge className="bg-emerald-50 text-emerald-700">On Track</Badge>
+              <div>
+                <p className="text-sm text-gray-600">Total Permissions</p>
+                <p className="text-2xl font-bold text-gray-900">{stats?.total_permissions || 0}</p>
               </div>
             </div>
-          </Card>
-        </RoleGuard>
+          </div>
+        </Card>
 
         {/* System Overview */}
         {isAdmin && (
@@ -135,46 +147,6 @@ export default function DashboardContent() {
         )}
       </div>
 
-      {/* Organization Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <Card className="p-6 hover:shadow-lg transition-shadow duration-200">
-          <div className="flex items-center justify-between mb-6">
-            <h3 className="text-lg font-semibold text-gray-900">Organization Overview</h3>
-            <Users className="h-6 w-6 text-indigo-500" />
-          </div>
-          <div className="grid grid-cols-2 gap-6">
-            <div>
-              <p className="text-sm text-gray-600">Total Employees</p>
-              <p className="text-2xl font-bold text-gray-900">45</p>
-            </div>
-            <div>
-              <p className="text-sm text-gray-600">Active Branches</p>
-              <p className="text-2xl font-bold text-gray-900">6</p>
-            </div>
-          </div>
-        </Card>
-
-        <Card className="p-6 hover:shadow-lg transition-shadow duration-200">
-          <div className="flex items-center justify-between mb-6">
-            <h3 className="text-lg font-semibold text-gray-900">Performance Metrics</h3>
-            <BarChart2 className="h-6 w-6 text-teal-500" />
-          </div>
-          <div className="grid grid-cols-2 gap-6">
-            <div>
-              <p className="text-sm text-gray-600">Processing Rate</p>
-              <div className="flex items-baseline">
-                <p className="text-2xl font-bold text-gray-900">94.2</p>
-                <span className="ml-1 text-sm text-gray-600">%</span>
-              </div>
-            </div>
-            <div>
-              <p className="text-sm text-gray-600">System Health</p>
-              <Badge className="mt-2 bg-emerald-50 text-emerald-700">Excellent</Badge>
-            </div>
-          </div>
-        </Card>
-      </div>
-
       {/* User Profile Section */}
       <Card className="p-6 hover:shadow-lg transition-shadow duration-200">
         <div className="flex items-center justify-between mb-6">
@@ -184,19 +156,19 @@ export default function DashboardContent() {
         <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
           <div>
             <p className="text-sm text-gray-600">Employee ID</p>
-            <p className="mt-1 font-medium text-gray-900">EMP-25-0001</p>
+            <p className="mt-1 font-medium text-gray-900">{user.employee_id || 'N/A'}</p>
           </div>
           <div>
             <p className="text-sm text-gray-600">Full Name</p>
-            <p className="mt-1 font-medium text-gray-900">Vikas Alagarsamy</p>
+            <p className="mt-1 font-medium text-gray-900">{`${user.first_name} ${user.last_name}`}</p>
           </div>
           <div>
             <p className="text-sm text-gray-600">Email</p>
-            <p className="mt-1 font-medium text-gray-900">vikas@ooak.photography</p>
+            <p className="mt-1 font-medium text-gray-900">{user.email}</p>
           </div>
           <div>
             <p className="text-sm text-gray-600">Role</p>
-            <Badge className="mt-2" variant="outline">MANAGING DIRECTOR</Badge>
+            <Badge className="mt-2" variant="outline">{user.designation?.name || 'N/A'}</Badge>
           </div>
         </div>
       </Card>
