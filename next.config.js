@@ -3,6 +3,20 @@ const nextConfig = {
   env: {
     CUSTOM_KEY: 'OOAK-AI-Platform',
   },
+  async rewrites() {
+    return {
+      beforeFiles: [
+        {
+          source: '/dashboard',
+          destination: '/(authenticated)/dashboard',
+        },
+        {
+          source: '/admin/:path*',
+          destination: '/(authenticated)/admin/:path*',
+        }
+      ]
+    };
+  },
   async headers() {
     return [
       {
@@ -15,6 +29,7 @@ const nextConfig = {
       },
     ];
   },
-};
+  output: 'standalone',
+}
 
 module.exports = nextConfig; 
