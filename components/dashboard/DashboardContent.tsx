@@ -43,7 +43,7 @@ export default function DashboardContent() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             <div className="flex items-center">
-              <h1 className="text-2xl font-bold text-gray-900">OOAK.AI</h1>
+              <h1 className="text-2xl font-bold text-gray-900">OOAK</h1>
               <Badge className="ml-3 bg-purple-100 text-purple-800">
                 Employee Portal
               </Badge>
@@ -274,10 +274,10 @@ export default function DashboardContent() {
                     </Card>
 
                     <Card className="p-6">
-                      <h3 className="text-lg font-semibold mb-4">AI Performance</h3>
+                      <h3 className="text-lg font-semibold mb-4">System Performance</h3>
                       <div className="space-y-3">
                         <div className="flex justify-between">
-                          <span className="text-gray-600">AI Efficiency</span>
+                          <span className="text-gray-600">System Efficiency</span>
                           <span className="font-semibold text-green-600">98.5%</span>
                         </div>
                         <div className="flex justify-between">
@@ -285,7 +285,7 @@ export default function DashboardContent() {
                           <span className="font-semibold">2.3 min</span>
                         </div>
                         <div className="flex justify-between">
-                          <span className="text-gray-600">Automation Rate</span>
+                          <span className="text-gray-600">Processing Rate</span>
                           <span className="font-semibold text-blue-600">94.2%</span>
                         </div>
                       </div>

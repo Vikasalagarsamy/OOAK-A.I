@@ -81,10 +81,10 @@ export default async function Dashboard() {
         {/* Header */}
         <div className="mb-8">
           <h1 className="text-4xl font-bold text-gray-900 mb-2">
-            OOAK.AI Development Dashboard
+            OOAK Development Dashboard
           </h1>
           <p className="text-lg text-gray-600">
-            India's First Fully Automated AI-Powered Wedding Photography Platform
+            India's Premier Wedding Photography Platform
           </p>
           <Badge variant="secondary" className="mt-2">
             🚀 Development Environment - Real Business Data
@@ -182,7 +182,7 @@ export default async function Dashboard() {
             <CardContent>
               <div className="text-2xl font-bold">{data.callTranscriptions}</div>
               <p className="text-xs text-muted-foreground">
-                AI training data
+                Call records
               </p>
             </CardContent>
           </Card>

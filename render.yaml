@@ -10,7 +10,7 @@ services:
       - key: NODE_ENV
         value: production
       - key: NEXT_PUBLIC_APP_NAME
-        value: OOAK.AI
+        value: OOAK
       - key: NEXT_PUBLIC_APP_URL
         fromService:
           type: web

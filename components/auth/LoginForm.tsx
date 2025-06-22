@@ -61,12 +61,7 @@ export default function LoginForm() {
     }));
   };
 
-  const fillTestCredentials = (employeeId: string) => {
-    setCredentials({
-      employee_id: employeeId,
-      password: 'password123',
-    });
-  };
+
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50 flex items-center justify-center p-4">
@@ -77,10 +72,10 @@ export default function LoginForm() {
             <span className="text-white font-bold text-2xl">O</span>
           </div>
           <h1 className="text-4xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent mb-2">
-            OOAK.AI
+            OOAK
           </h1>
           <p className="text-gray-600 text-lg">Employee Portal</p>
-          <p className="text-gray-500 text-sm mt-2">India's First AI-Powered Wedding Photography Platform</p>
+          <p className="text-gray-500 text-sm mt-2">India's Premier Wedding Photography Platform</p>
         </div>
 
         {/* Login Card */}
@@ -149,46 +144,12 @@ export default function LoginForm() {
             </Button>
           </form>
 
-          {/* Test Credentials */}
+          {/* Help Section */}
           <div className="mt-8 pt-6 border-t border-gray-200">
-            <div className="text-center mb-4">
-              <p className="text-sm font-medium text-gray-700 mb-3">Quick Test Login:</p>
-              <div className="grid grid-cols-1 gap-2">
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  onClick={() => fillTestCredentials('EMP-25-0027')}
-                  className="text-xs hover:bg-purple-50 hover:border-purple-300"
-                  disabled={loading}
-                >
-                  Sales Head (Full Access)
-                </Button>
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  onClick={() => fillTestCredentials('EMP-25-0039')}
-                  className="text-xs hover:bg-blue-50 hover:border-blue-300"
-                  disabled={loading}
-                >
-                  Sales Executive (Limited)
-                </Button>
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  onClick={() => fillTestCredentials('EMP-25-0008')}
-                  className="text-xs hover:bg-green-50 hover:border-green-300"
-                  disabled={loading}
-                >
-                  Accounts Manager (Basic)
-                </Button>
-              </div>
-            </div>
-            <div className="text-xs text-gray-500 text-center space-y-1">
-              <p><strong>Password for all:</strong> password123</p>
-              <p>Click any button above to auto-fill credentials</p>
+            <div className="text-center">
+              <p className="text-xs text-gray-500">
+                Need help? Contact your system administrator
+              </p>
             </div>
           </div>
         </Card>
@@ -196,7 +157,7 @@ export default function LoginForm() {
         {/* Footer */}
         <div className="text-center mt-6">
           <p className="text-xs text-gray-500">
-            Powered by AI • Secured by Advanced Authentication
+            Secured by Advanced Authentication
           </p>
         </div>
       </div>
