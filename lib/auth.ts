@@ -95,11 +95,11 @@ export class AuthService {
         WHERE e.employee_id = $1 AND e.status = 'active'
       `, [employee_id]);
 
-      if (result.rows.length === 0) {
+      if (!result.success || !result.data || result.data.length === 0) {
         return null;
       }
 
-      const employee = result.rows[0];
+      const employee = result.data[0];
 
       // Check if password hash exists
       if (!employee.password_hash) {
@@ -164,11 +164,11 @@ export class AuthService {
         WHERE e.id = $1 AND e.status = 'active'
       `, [payload.userId]);
 
-      if (result.rows.length === 0) {
+      if (!result.success || !result.data || result.data.length === 0) {
         return null;
       }
 
-      const employee = result.rows[0];
+      const employee = result.data[0];
       const permissions = this.getUserPermissions(employee.designation_name || '');
 
       return {
