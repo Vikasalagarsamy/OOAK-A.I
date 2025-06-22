@@ -4,18 +4,16 @@ const nextConfig = {
     CUSTOM_KEY: 'OOAK-AI-Platform',
   },
   async rewrites() {
-    return {
-      beforeFiles: [
-        {
-          source: '/dashboard',
-          destination: '/(authenticated)/dashboard',
-        },
-        {
-          source: '/admin/:path*',
-          destination: '/(authenticated)/admin/:path*',
-        }
-      ]
-    };
+    return [
+      {
+        source: '/dashboard',
+        destination: '/authenticated/dashboard'
+      },
+      {
+        source: '/admin/:path*',
+        destination: '/authenticated/admin/:path*'
+      }
+    ];
   },
   async headers() {
     return [
