@@ -1,6 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { query } from '@/lib/db';
 
+export async function GET(request: NextRequest) {
+  return NextResponse.json({
+    message: 'Menu Setup API - Use POST method to execute setup',
+    instructions: 'Send a POST request to this endpoint to add missing menu items to production'
+  });
+}
+
 export async function POST(request: NextRequest) {
   try {
     console.log('🚀 Setting up missing menu items...');

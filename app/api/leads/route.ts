@@ -31,40 +31,27 @@ export async function GET(request: NextRequest) {
       paramIndex++;
     }
 
-    // Get total count
+    // Get total count - simplified for testing
     const countResult = await query(`
       SELECT COUNT(*) as total 
-      FROM leads 
-      ${whereClause}
-    `, params);
+      FROM clients
+    `, []);
 
-    if (!countResult.success) {
-      throw new Error('Failed to fetch leads count');
-    }
+    console.log('🔍 Count result:', countResult);
 
-    const total = parseInt(countResult.data?.[0]?.total || '0');
+    const total = parseInt(countResult.rows[0]?.total || '0');
 
     // Get leads with pagination
     const leadsQuery = `
       SELECT 
         l.*,
-        ls.name as lead_source_name,
-        e.name as assigned_employee_name
-      FROM leads l
-      LEFT JOIN lead_sources ls ON l.lead_source_id = ls.id
-      LEFT JOIN employees e ON l.assigned_to = e.id
-      ${whereClause}
+        l.category as lead_source_name
+      FROM clients l
       ORDER BY l.created_at DESC
-      LIMIT $${paramIndex} OFFSET $${paramIndex + 1}
+      LIMIT $1 OFFSET $2
     `;
-
-    params.push(limit, offset);
     
-    const leadsResult = await query(leadsQuery, params);
-
-    if (!leadsResult.success) {
-      throw new Error('Failed to fetch leads');
-    }
+    const leadsResult = await query(leadsQuery, [limit, offset]);
 
     const totalPages = Math.ceil(total / limit);
 
@@ -72,7 +59,7 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json({
       success: true,
-      data: leadsResult.data || [],
+      data: leadsResult.rows || [],
       pagination: {
         total,
         page,
@@ -109,11 +96,11 @@ export async function POST(request: NextRequest) {
 
     // Check if lead with same phone already exists
     const existingLead = await query(
-      'SELECT id FROM leads WHERE phone = $1',
+      'SELECT id FROM clients WHERE phone = $1',
       [body.phone]
     );
 
-    if (existingLead.success && existingLead.data && existingLead.data.length > 0) {
+    if (existingLead.rows && existingLead.rows.length > 0) {
       return NextResponse.json({
         success: false,
         error: 'Lead with this phone number already exists',
@@ -123,36 +110,45 @@ export async function POST(request: NextRequest) {
 
     // Create new lead
     const insertQuery = `
-      INSERT INTO leads (
-        name, email, phone, lead_source_id, status, 
-        wedding_date, budget_range, location, created_at, updated_at
+      INSERT INTO clients (
+        client_code, name, company_id, contact_person, email, phone, 
+        address, city, state, postal_code, country, category, status, 
+        created_at, updated_at
       ) VALUES (
-        $1, $2, $3, $4, $5, $6, $7, $8, NOW(), NOW()
+        $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, NOW(), NOW()
       ) RETURNING *
     `;
 
+    // Generate a simple client code
+    const clientCode = `CL${Date.now().toString().slice(-6)}`;
+
     const values = [
+      clientCode,
       body.name,
-      body.email || null,
+      1, // Default company_id
+      body.name, // contact_person same as name
+      body.email || '',
       body.phone,
-      body.lead_source_id || null,
-      'new', // Default status
-      body.wedding_date || null,
-      body.budget_range || null,
-      body.location || null
+      body.location || '', // address
+      '', // city
+      '', // state
+      '', // postal_code
+      'India', // country
+      'lead', // category
+      'new' // status
     ];
 
     const result = await query(insertQuery, values);
 
-    if (!result.success || !result.data) {
+    if (!result.rows || result.rows.length === 0) {
       throw new Error('Failed to create lead');
     }
 
-    console.log('✅ Lead created successfully:', result.data[0]);
+    console.log('✅ Lead created successfully:', result.rows[0]);
 
     return NextResponse.json({
       success: true,
-      data: result.data[0],
+      data: result.rows[0],
       message: 'Lead created successfully'
     }, { status: 201 });
 
