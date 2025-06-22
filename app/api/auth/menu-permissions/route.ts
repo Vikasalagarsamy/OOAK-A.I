@@ -2,6 +2,26 @@ import { NextResponse } from 'next/server';
 import { getDbPool } from '@/lib/db';
 import { AuthService } from '@/lib/auth';
 
+interface MenuItem {
+  id: number;
+  name: string;
+  path: string;
+  icon: string;
+  parent_id: number | null;
+  string_id: string;
+  section_name: string | null;
+  is_admin_only: boolean;
+  sort_order: number;
+  is_visible: boolean;
+  can_view: boolean;
+  level: number;
+  children?: MenuItem[];
+}
+
+interface QueryResult {
+  rows: MenuItem[];
+}
+
 export async function GET(request: Request) {
   try {
     // Get current user
@@ -17,7 +37,7 @@ export async function GET(request: Request) {
     const pool = getDbPool();
     
     // Get menu permissions for the user's designation
-    const result = await pool.query(`
+    const result = await pool.query<MenuItem>(`
       WITH RECURSIVE menu_tree AS (
         -- Get parent menu items with permissions
         SELECT 
@@ -64,7 +84,7 @@ export async function GET(request: Request) {
       SELECT *
       FROM menu_tree
       ORDER BY level, sort_order, name;
-    `, [user.designation.id]);
+    `, [user.designation.id]) as QueryResult;
 
     if (!result.rows) {
       return NextResponse.json(
@@ -74,8 +94,8 @@ export async function GET(request: Request) {
     }
 
     // Convert flat structure to tree
-    const menuMap = new Map();
-    const rootItems = [];
+    const menuMap = new Map<number, MenuItem>();
+    const rootItems: MenuItem[] = [];
 
     // First pass: Create all menu items
     result.rows.forEach(item => {
@@ -89,11 +109,12 @@ export async function GET(request: Request) {
     result.rows.forEach(item => {
       const menuItem = menuMap.get(item.id);
       if (item.parent_id === null) {
-        rootItems.push(menuItem);
+        rootItems.push(menuItem!);
       } else {
         const parent = menuMap.get(item.parent_id);
         if (parent) {
-          parent.children.push(menuItem);
+          parent.children = parent.children || [];
+          parent.children.push(menuItem!);
         }
       }
     });
