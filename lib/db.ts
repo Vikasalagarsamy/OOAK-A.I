@@ -1,134 +1,111 @@
-import { Pool, PoolClient, QueryResult } from 'pg';
+import { Pool } from 'pg';
 
-// Database configuration
-const dbConfig = {
-  host: process.env.POSTGRES_HOST || 'localhost',
-  port: parseInt(process.env.POSTGRES_PORT || '5432'),
-  database: process.env.POSTGRES_DB || 'ooak_ai_db',
-  user: process.env.POSTGRES_USER || 'vikasalagarsamy',
-  password: process.env.POSTGRES_PASSWORD || '',
-  max: 20, // Maximum number of clients in the pool
-  idleTimeoutMillis: 30000, // Close idle clients after 30 seconds
-  connectionTimeoutMillis: 2000, // Return error after 2 seconds if connection could not be established
+// Auto-detect environment and use appropriate database configuration
+const isDevelopment = process.env.NODE_ENV === 'development';
+const isProduction = process.env.NODE_ENV === 'production';
+
+let connectionConfig;
+
+if (isDevelopment) {
+  // Local development database
+  connectionConfig = {
+    connectionString: process.env.DATABASE_URL || 'postgresql://localhost:5432/ooak_ai_dev',
+    ssl: false,
+    max: 10,
+    idleTimeoutMillis: 30000,
+    connectionTimeoutMillis: 5000,
+  };
+} else if (isProduction) {
+  // Production database (Render)
+  connectionConfig = {
+    connectionString: process.env.DATABASE_URL,
+    ssl: {
+      rejectUnauthorized: false
+    },
+    max: 20,
+    idleTimeoutMillis: 30000,
+    connectionTimeoutMillis: 10000,
+  };
+} else {
+  // Staging or other environments
+  connectionConfig = {
+    connectionString: process.env.DATABASE_URL,
+    ssl: {
+      rejectUnauthorized: false
+    },
+    max: 15,
+    idleTimeoutMillis: 30000,
+    connectionTimeoutMillis: 7000,
+  };
+}
+
+// Create connection pool
+const pool = new Pool(connectionConfig);
+
+// Connection event handlers
+pool.on('connect', (client) => {
+  if (isDevelopment) {
+    console.log('🔗 Connected to local development database');
+  }
+});
+
+pool.on('error', (err) => {
+  console.error('❌ Database connection error:', err);
+  process.exit(-1);
+});
+
+// Database query function with error handling and retry logic
+export async function query(text: string, params?: any[]): Promise<any> {
+  const maxRetries = 3;
+  let retries = 0;
+  
+  while (retries < maxRetries) {
+    try {
+      const start = Date.now();
+      const result = await pool.query(text, params);
+      const duration = Date.now() - start;
+      
+      if (isDevelopment && duration > 1000) {
+        console.warn(`⚠️ Slow query (${duration}ms): ${text.substring(0, 100)}...`);
+      }
+      
+      return result;
+    } catch (error: any) {
+      retries++;
+      console.error(`❌ Database query error (attempt ${retries}/${maxRetries}):`, error.message);
+      
+      if (retries >= maxRetries) {
+        throw error;
+      }
+      
+      // Wait before retry (exponential backoff)
+      await new Promise(resolve => setTimeout(resolve, Math.pow(2, retries) * 1000));
+    }
+  }
+}
+
+// Get database connection for transactions
+export async function getClient() {
+  return await pool.connect();
+}
+
+// Health check function
+export async function healthCheck(): Promise<boolean> {
+  try {
+    const result = await query('SELECT 1 as health');
+    return result.rows[0].health === 1;
+  } catch (error) {
+    console.error('❌ Database health check failed:', error);
+    return false;
+  }
+}
+
+// Environment info
+export const dbInfo = {
+  environment: process.env.NODE_ENV || 'development',
+  isDevelopment,
+  isProduction,
+  maxConnections: connectionConfig.max
 };
 
-// Create connection pool singleton
-let pool: Pool | null = null;
-
-function getPool(): Pool {
-  if (!pool) {
-    pool = new Pool(dbConfig);
-    
-    pool.on('connect', () => {
-      console.log('🔗 Connected to OOAK.AI PostgreSQL database');
-    });
-    
-    pool.on('error', (err) => {
-      console.error('❌ PostgreSQL pool error:', err);
-    });
-  }
-  
-  return pool;
-}
-
-// Query function with automatic connection management
-export async function query<T = any>(
-  text: string, 
-  params?: any[]
-): Promise<{ data: T[] | null; success: boolean; error?: string }> {
-  const pool = getPool();
-  let client: PoolClient | null = null;
-  
-  try {
-    client = await pool.connect();
-    const result = await client.query(text, params);
-    
-    return {
-      data: result.rows as T[],
-      success: true
-    };
-  } catch (error) {
-    console.error('❌ Database query error:', error);
-    return {
-      data: null,
-      success: false,
-      error: error instanceof Error ? error.message : 'Unknown database error'
-    };
-  } finally {
-    if (client) {
-      client.release();
-    }
-  }
-}
-
-// Transaction function
-export async function transaction<T>(
-  callback: (queryFn: typeof query) => Promise<T>
-): Promise<{ data: T | null; success: boolean; error?: string }> {
-  const pool = getPool();
-  let client: PoolClient | null = null;
-  
-  try {
-    client = await pool.connect();
-    await client.query('BEGIN');
-    
-    // Create a query function that uses this client
-    const transactionQuery = async <U = any>(text: string, params?: any[]) => {
-      if (!client) throw new Error('Transaction client not available');
-      const result = await client.query(text, params);
-      return {
-        data: result.rows as U[],
-        success: true
-      };
-    };
-    
-    const result = await callback(transactionQuery);
-    await client.query('COMMIT');
-    
-    return {
-      data: result,
-      success: true
-    };
-  } catch (error) {
-    if (client) {
-      await client.query('ROLLBACK');
-    }
-    console.error('❌ Database transaction error:', error);
-    return {
-      data: null,
-      success: false,
-      error: error instanceof Error ? error.message : 'Unknown transaction error'
-    };
-  } finally {
-    if (client) {
-      client.release();
-    }
-  }
-}
-
-// Test connection function
-export async function testConnection(): Promise<boolean> {
-  try {
-    const result = await query('SELECT NOW() as current_time');
-    if (result.success && result.data) {
-      console.log('✅ Database connection test successful:', result.data[0]);
-      return true;
-    }
-    return false;
-  } catch (error) {
-    console.error('❌ Database connection test failed:', error);
-    return false;
-  }
-}
-
-// Graceful shutdown
-export async function closePool(): Promise<void> {
-  if (pool) {
-    await pool.end();
-    pool = null;
-    console.log('🔒 Database pool closed');
-  }
-}
-
-// Export pool for advanced usage
-export const getDbPool = getPool; 
+export default pool;
