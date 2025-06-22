@@ -1,32 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-
-// Use production database connection if available, fallback to development
-let healthCheck: () => Promise<{ healthy: boolean; latency: number; error?: string }>;
-
-try {
-  // Try to import production database module
-  const prodDb = require('@/lib/db-production');
-  healthCheck = prodDb.healthCheck;
-} catch {
-  // Fallback to development database module
-  const devDb = require('@/lib/db');
-  healthCheck = async () => {
-    try {
-      const result = await devDb.query('SELECT 1 as health_check, NOW() as server_time');
-      return {
-        healthy: result.success,
-        latency: 0, // Simple implementation for dev
-        error: result.error
-      };
-    } catch (error) {
-      return {
-        healthy: false,
-        latency: 0,
-        error: error instanceof Error ? error.message : 'Health check failed'
-      };
-    }
-  };
-}
+import { healthCheck } from '@/lib/db';
 
 export async function GET(request: NextRequest) {
   try {

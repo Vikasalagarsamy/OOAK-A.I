@@ -1,111 +1,202 @@
-import { Pool } from 'pg';
+import { Pool, PoolClient, QueryResult } from 'pg';
 
-// Auto-detect environment and use appropriate database configuration
-const isDevelopment = process.env.NODE_ENV === 'development';
-const isProduction = process.env.NODE_ENV === 'production';
-
-let connectionConfig;
-
-if (isDevelopment) {
-  // Local development database
-  connectionConfig = {
-    connectionString: process.env.DATABASE_URL || 'postgresql://localhost:5432/ooak_ai_dev',
-    ssl: false,
-    max: 10,
-    idleTimeoutMillis: 30000,
-    connectionTimeoutMillis: 5000,
-  };
-} else if (isProduction) {
-  // Production database (Render)
-  connectionConfig = {
-    connectionString: process.env.DATABASE_URL,
-    ssl: {
-      rejectUnauthorized: false
-    },
-    max: 20,
+// Standardized database configuration (uses production database for all environments)
+const getDbConfig = () => {
+  // Always use production database - dev pulls from production
+  if (process.env.DATABASE_URL) {
+    return {
+      connectionString: process.env.DATABASE_URL,
+      ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false,
+      max: process.env.NODE_ENV === 'production' ? 20 : 10, // Lower connections for dev
+      idleTimeoutMillis: 30000,
+      connectionTimeoutMillis: 10000,
+    };
+  }
+  
+  // Fallback to individual environment variables
+  return {
+    host: process.env.POSTGRES_HOST || 'localhost',
+    port: parseInt(process.env.POSTGRES_PORT || '5432'),
+    database: process.env.POSTGRES_DB || 'ooak_ai_db',
+    user: process.env.POSTGRES_USER || 'postgres',
+    password: process.env.POSTGRES_PASSWORD || '',
+    ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false,
+    max: process.env.NODE_ENV === 'production' ? 20 : 10,
     idleTimeoutMillis: 30000,
     connectionTimeoutMillis: 10000,
   };
-} else {
-  // Staging or other environments
-  connectionConfig = {
-    connectionString: process.env.DATABASE_URL,
-    ssl: {
-      rejectUnauthorized: false
-    },
-    max: 15,
-    idleTimeoutMillis: 30000,
-    connectionTimeoutMillis: 7000,
+};
+
+// Create connection pool singleton
+let pool: Pool | null = null;
+
+function getPool(): Pool {
+  if (!pool) {
+    const config = getDbConfig();
+    pool = new Pool(config);
+    
+    pool.on('connect', () => {
+      const env = process.env.NODE_ENV || 'development';
+      console.log(`🔗 Connected to OOAK.AI Production Database (${env} mode)`);
+    });
+    
+    pool.on('error', (err) => {
+      console.error('❌ Database pool error:', err);
+    });
+    
+    // Graceful shutdown
+    process.on('SIGINT', async () => {
+      console.log('🔒 Closing database pool...');
+      await pool?.end();
+      process.exit(0);
+    });
+    
+    process.on('SIGTERM', async () => {
+      console.log('🔒 Closing database pool...');
+      await pool?.end();
+      process.exit(0);
+    });
+  }
+  
+  return pool;
+}
+
+// Standardized query function with retry logic
+export async function query<T = any>(
+  text: string, 
+  params?: any[]
+): Promise<{ data: T[] | null; success: boolean; error?: string }> {
+  const pool = getPool();
+  let client: PoolClient | null = null;
+  let retries = 3;
+  
+  while (retries > 0) {
+    try {
+      client = await pool.connect();
+      const result = await client.query(text, params);
+      
+      return {
+        data: result.rows as T[],
+        success: true
+      };
+    } catch (error) {
+      console.error(`❌ Database query error (${retries} retries left):`, error);
+      retries--;
+      
+      if (retries === 0) {
+        return {
+          data: null,
+          success: false,
+          error: error instanceof Error ? error.message : 'Unknown database error'
+        };
+      }
+      
+      // Wait before retry
+      await new Promise(resolve => setTimeout(resolve, 1000));
+    } finally {
+      if (client) {
+        client.release();
+      }
+    }
+  }
+  
+  return {
+    data: null,
+    success: false,
+    error: 'Maximum retries exceeded'
   };
 }
 
-// Create connection pool
-const pool = new Pool(connectionConfig);
-
-// Connection event handlers
-pool.on('connect', (client) => {
-  if (isDevelopment) {
-    console.log('🔗 Connected to local development database');
-  }
-});
-
-pool.on('error', (err) => {
-  console.error('❌ Database connection error:', err);
-  process.exit(-1);
-});
-
-// Database query function with error handling and retry logic
-export async function query(text: string, params?: any[]): Promise<any> {
-  const maxRetries = 3;
-  let retries = 0;
+// Transaction function
+export async function transaction<T>(
+  callback: (queryFn: typeof query) => Promise<T>
+): Promise<{ data: T | null; success: boolean; error?: string }> {
+  const pool = getPool();
+  let client: PoolClient | null = null;
   
-  while (retries < maxRetries) {
-    try {
-      const start = Date.now();
-      const result = await pool.query(text, params);
-      const duration = Date.now() - start;
-      
-      if (isDevelopment && duration > 1000) {
-        console.warn(`⚠️ Slow query (${duration}ms): ${text.substring(0, 100)}...`);
-      }
-      
-      return result;
-    } catch (error: any) {
-      retries++;
-      console.error(`❌ Database query error (attempt ${retries}/${maxRetries}):`, error.message);
-      
-      if (retries >= maxRetries) {
-        throw error;
-      }
-      
-      // Wait before retry (exponential backoff)
-      await new Promise(resolve => setTimeout(resolve, Math.pow(2, retries) * 1000));
+  try {
+    client = await pool.connect();
+    await client.query('BEGIN');
+    
+    // Create a query function that uses this client
+    const transactionQuery = async <U = any>(text: string, params?: any[]) => {
+      if (!client) throw new Error('Transaction client not available');
+      const result = await client.query(text, params);
+      return {
+        data: result.rows as U[],
+        success: true
+      };
+    };
+    
+    const result = await callback(transactionQuery);
+    await client.query('COMMIT');
+    
+    return {
+      data: result,
+      success: true
+    };
+  } catch (error) {
+    if (client) {
+      await client.query('ROLLBACK');
+    }
+    console.error('❌ Database transaction error:', error);
+    return {
+      data: null,
+      success: false,
+      error: error instanceof Error ? error.message : 'Unknown transaction error'
+    };
+  } finally {
+    if (client) {
+      client.release();
     }
   }
 }
 
-// Get database connection for transactions
+// Health check function
+export async function healthCheck(): Promise<{ healthy: boolean; latency: number; error?: string }> {
+  const startTime = Date.now();
+  
+  try {
+    const result = await query('SELECT 1 as health_check, NOW() as server_time');
+    const latency = Date.now() - startTime;
+    
+    if (result.success && result.data) {
+      return {
+        healthy: true,
+        latency,
+      };
+    }
+    
+    return {
+      healthy: false,
+      latency,
+      error: result.error || 'Unknown health check error'
+    };
+  } catch (error) {
+    const latency = Date.now() - startTime;
+    return {
+      healthy: false,
+      latency,
+      error: error instanceof Error ? error.message : 'Health check failed'
+    };
+  }
+}
+
+// Get database connection for advanced usage
 export async function getClient() {
+  const pool = getPool();
   return await pool.connect();
 }
 
-// Health check function
-export async function healthCheck(): Promise<boolean> {
-  try {
-    const result = await query('SELECT 1 as health');
-    return result.rows[0].health === 1;
-  } catch (error) {
-    console.error('❌ Database health check failed:', error);
-    return false;
-  }
-}
+// Export connection pool for advanced usage
+export const getDbPool = getPool;
 
 // Environment info
 export const dbInfo = {
   environment: process.env.NODE_ENV || 'development',
-  isDevelopment,
-  isProduction,
-  maxConnections: connectionConfig.max
+  isProduction: process.env.NODE_ENV === 'production',
+  isDevelopment: process.env.NODE_ENV === 'development',
+  maxConnections: getDbConfig().max
 };
 
-export default pool;
+export default getPool();

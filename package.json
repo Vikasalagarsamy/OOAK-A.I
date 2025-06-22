@@ -15,10 +15,7 @@
     "db:backup": "pg_dump ooak_ai_dev > backup_local_$(date +%Y%m%d_%H%M%S).sql",
     "db:setup": "node scripts/setup-local-simple.js",
     "db:reset": "dropdb ooak_ai_dev && createdb ooak_ai_dev && npm run db:populate",
-    "db:migrate-auth": "node scripts/migrate-auth-to-production.js",
-    "menu:setup": "node scripts/setup-menu-system.js",
-    "menu:sync-prod": "node scripts/sync-production-menus.js",
-    "menu:add-prod": "node scripts/add-production-menus.js"
+    "db:migrate-auth": "node scripts/migrate-auth-to-production.js"
   },
   "dependencies": {
     "@radix-ui/react-dialog": "^1.0.5",
