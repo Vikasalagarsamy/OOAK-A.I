@@ -22,7 +22,12 @@ async function syncDatabase() {
     const dumpFile = 'prod_dump.sql';
     console.log('📦 Step 1: Dumping production database...');
     
-    const dumpCommand = `PGSSLMODE=require pg_dump "${PROD_DB_URL}" \
+    // Modified pg_dump command with SSL mode set to require and no verify-ca
+    const dumpCommand = `PGSSLMODE=require PGPASSWORD=mSglqEawN72hkoEj8tSNF5qv9vJr3U6k pg_dump \
+      --host=dpg-d1bf04er433s739icgmg-a.singapore-postgres.render.com \
+      --port=5432 \
+      --username=ooak_admin \
+      --dbname=ooak_ai_db \
       --clean \
       --if-exists \
       --no-owner \
