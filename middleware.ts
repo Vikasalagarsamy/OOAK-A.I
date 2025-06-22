@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 
 // Define public paths that don't require authentication
-const PUBLIC_PATHS = ['/', '/login', '/api/auth/login'];
+const PUBLIC_PATHS = ['/login', '/api/auth/login'];
 
 export function middleware(request: NextRequest) {
   // Get the pathname of the request
@@ -15,7 +15,7 @@ export function middleware(request: NextRequest) {
   if (PUBLIC_PATHS.includes(path)) {
     // If user is authenticated, redirect to dashboard
     if (authToken) {
-      return NextResponse.redirect(new URL('/dashboard', request.url));
+      return NextResponse.redirect(new URL('/(authenticated)/dashboard', request.url));
     }
     // Otherwise, allow access to public path
     return NextResponse.next();
