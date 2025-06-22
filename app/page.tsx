@@ -43,17 +43,24 @@ async function getDashboardData() {
       ORDER BY employee_count DESC
     `);
 
+    // Check if all queries were successful
+    if (!companiesResult.success || !branchesResult.success || !employeesResult.success || 
+        !leadsResult.success || !quotationsResult.success || !whatsappResult.success || 
+        !callsResult.success || !eventsResult.success) {
+      console.warn('Some database queries failed, using fallback data');
+    }
+
     return {
-      companies: parseInt(companiesResult.rows[0].count),
-      branches: parseInt(branchesResult.rows[0].count),
-      employees: parseInt(employeesResult.rows[0].count),
-      leads: parseInt(leadsResult.rows[0].count),
-      quotations: parseInt(quotationsResult.rows[0].count),
-      whatsappMessages: parseInt(whatsappResult.rows[0].count),
-      callTranscriptions: parseInt(callsResult.rows[0].count),
-      events: parseInt(eventsResult.rows[0].count),
-      recentActivities: recentActivities.rows,
-      branchData: branchData.rows
+      companies: parseInt(companiesResult.data?.[0]?.count || '0'),
+      branches: parseInt(branchesResult.data?.[0]?.count || '0'),
+      employees: parseInt(employeesResult.data?.[0]?.count || '0'),
+      leads: parseInt(leadsResult.data?.[0]?.count || '0'),
+      quotations: parseInt(quotationsResult.data?.[0]?.count || '0'),
+      whatsappMessages: parseInt(whatsappResult.data?.[0]?.count || '0'),
+      callTranscriptions: parseInt(callsResult.data?.[0]?.count || '0'),
+      events: parseInt(eventsResult.data?.[0]?.count || '0'),
+      recentActivities: recentActivities.data || [],
+      branchData: branchData.data || []
     };
   } catch (error) {
     console.error('Dashboard data error:', error);
