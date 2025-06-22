@@ -4,6 +4,7 @@ const path = require('path');
 
 async function checkAndUpdateSchema() {
   console.log('🔍 Starting database schema check...');
+  console.log('Current working directory:', process.cwd());
   console.log('DATABASE_URL:', process.env.DATABASE_URL ? 'Present' : 'Missing');
 
   let pool;
@@ -21,8 +22,18 @@ async function checkAndUpdateSchema() {
 
     // Test the connection
     console.log('Testing database connection...');
-    await pool.query('SELECT NOW()');
-    console.log('✅ Database connection successful');
+    const testResult = await pool.query('SELECT NOW()');
+    console.log('✅ Database connection successful, server time:', testResult.rows[0].now);
+
+    // List all tables in public schema
+    console.log('Listing existing tables...');
+    const tablesResult = await pool.query(`
+      SELECT table_name 
+      FROM information_schema.tables 
+      WHERE table_schema = 'public'
+      ORDER BY table_name;
+    `);
+    console.log('Existing tables:', tablesResult.rows.map(r => r.table_name));
 
     // Check if menu_items table exists
     console.log('Checking if menu_items table exists...');
@@ -42,96 +53,47 @@ async function checkAndUpdateSchema() {
       // Read schema file
       const schemaPath = path.join(__dirname, '../schema.sql');
       console.log('Reading schema from:', schemaPath);
-      const schemaSQL = fs.readFileSync(schemaPath, 'utf8');
       
-      // Split schema into individual statements
-      const statements = schemaSQL.split(';').filter(stmt => stmt.trim());
-      
-      // Execute each statement separately
-      for (const stmt of statements) {
-        if (stmt.trim()) {
-          console.log('Executing statement:', stmt.trim().substring(0, 50) + '...');
-          await pool.query(stmt);
+      try {
+        const schemaSQL = fs.readFileSync(schemaPath, 'utf8');
+        console.log('Schema file size:', schemaSQL.length, 'bytes');
+        console.log('First 500 characters of schema:', schemaSQL.substring(0, 500));
+        
+        // Split schema into individual statements
+        const statements = schemaSQL.split(';').filter(stmt => stmt.trim());
+        console.log('Number of SQL statements found:', statements.length);
+        
+        // Execute each statement separately
+        for (let i = 0; i < statements.length; i++) {
+          const stmt = statements[i].trim();
+          if (stmt) {
+            console.log(`Executing statement ${i + 1}/${statements.length}:`, stmt.substring(0, 100) + '...');
+            try {
+              await pool.query(stmt);
+              console.log(`✅ Statement ${i + 1} executed successfully`);
+            } catch (err) {
+              console.error(`❌ Error executing statement ${i + 1}:`, err.message);
+              throw err;
+            }
+          }
         }
+        console.log('✅ Schema created successfully!');
+
+        // Verify the tables were created
+        const verifyTables = await pool.query(`
+          SELECT table_name 
+          FROM information_schema.tables 
+          WHERE table_schema = 'public'
+          ORDER BY table_name;
+        `);
+        
+        console.log('Tables after schema creation:', verifyTables.rows.map(r => r.table_name));
+      } catch (err) {
+        console.error('❌ Error reading or parsing schema file:', err);
+        throw err;
       }
-      console.log('✅ Schema created successfully!');
-
-      // Insert default menu items
-      console.log('Creating default menu items...');
-      const defaultMenuItems = `
-        -- Core menu items
-        INSERT INTO menu_items (name, path, icon, parent_id, sort_order, is_active) VALUES
-        ('Dashboard', '/dashboard', 'LayoutDashboard', NULL, 1, true),
-        ('Sales', '/sales', 'TrendingUp', NULL, 2, true),
-        ('Leads', '/sales/leads', 'Users', (SELECT id FROM menu_items WHERE name = 'Sales' LIMIT 1), 1, true),
-        ('Quotations', '/sales/quotations', 'FileText', (SELECT id FROM menu_items WHERE name = 'Sales' LIMIT 1), 2, true),
-        ('Reports', '/reports', 'BarChart', NULL, 3, true)
-        ON CONFLICT (id) DO NOTHING;
-      `;
-      
-      await pool.query(defaultMenuItems);
-      console.log('✅ Default menu items created');
-
-      // Set up permissions for SALES HEAD
-      console.log('Setting up SALES HEAD permissions...');
-      const salesHeadPermissions = `
-        INSERT INTO designation_menu_permissions (designation_id, menu_item_id, can_view)
-        SELECT 
-          d.id as designation_id,
-          mi.id as menu_item_id,
-          true as can_view
-        FROM designations d
-        CROSS JOIN menu_items mi
-        WHERE d.name = 'SALES HEAD'
-        ON CONFLICT (designation_id, menu_item_id) DO NOTHING;
-      `;
-      
-      await pool.query(salesHeadPermissions);
-      console.log('✅ SALES HEAD permissions created');
-
-      // Verify the tables were created
-      const verifyTables = await pool.query(`
-        SELECT table_name 
-        FROM information_schema.tables 
-        WHERE table_schema = 'public' 
-        AND table_name IN ('menu_items', 'designation_menu_permissions');
-      `);
-      
-      console.log('Created tables:', verifyTables.rows.map(r => r.table_name));
     } else {
       console.log('✅ Menu permissions tables already exist');
-      
-      // Check if we need to update any existing permissions
-      console.log('Checking SALES HEAD permissions...');
-      const permissionsCheck = await pool.query(`
-        SELECT COUNT(*) 
-        FROM designation_menu_permissions dmp
-        JOIN designations d ON d.id = dmp.designation_id
-        WHERE d.name = 'SALES HEAD';
-      `);
-
-      console.log('Current SALES HEAD permissions count:', permissionsCheck.rows[0].count);
-
-      if (permissionsCheck.rows[0].count === 0) {
-        console.log('⚠️ No permissions found for SALES HEAD. Adding default permissions...');
-        
-        const updatePermissions = `
-          INSERT INTO designation_menu_permissions (designation_id, menu_item_id, can_view)
-          SELECT 
-            d.id as designation_id,
-            mi.id as menu_item_id,
-            true as can_view
-          FROM designations d
-          CROSS JOIN menu_items mi
-          WHERE d.name = 'SALES HEAD'
-          ON CONFLICT (designation_id, menu_item_id) DO NOTHING;
-        `;
-        
-        await pool.query(updatePermissions);
-        console.log('✅ Default permissions added for SALES HEAD');
-      } else {
-        console.log('✅ SALES HEAD permissions are already set up');
-      }
     }
 
     console.log('🎉 Database schema check completed successfully!');
@@ -146,7 +108,7 @@ async function checkAndUpdateSchema() {
       table: error.table,
       constraint: error.constraint
     });
-    throw error; // Re-throw to fail the build
+    throw error;
   } finally {
     if (pool) {
       console.log('Closing database connection...');
