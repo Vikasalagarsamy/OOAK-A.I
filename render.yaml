@@ -5,7 +5,10 @@ services:
     env: node
     plan: starter
     buildCommand: npm install && npm run build
-    startCommand: node scripts/apply-schema.js && npm start
+    startCommand: npm start
+    # Add release phase to run before starting the app
+    release:
+      command: node scripts/apply-schema.js
     envVars:
       - key: NODE_ENV
         value: production
