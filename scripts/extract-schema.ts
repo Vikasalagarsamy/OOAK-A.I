@@ -1,6 +1,36 @@
-const { Pool } = require('pg');
-const fs = require('fs').promises;
-const path = require('path');
+import { Pool } from 'pg';
+import fs from 'fs/promises';
+import path from 'path';
+
+interface TableRow {
+  table_name: string;
+}
+
+interface ColumnRow {
+  column_name: string;
+  data_type: string;
+  character_maximum_length: number | null;
+  column_default: string | null;
+  is_nullable: string;
+}
+
+interface PrimaryKeyRow {
+  column_name: string;
+}
+
+interface ForeignKeyRow {
+  constraint_name: string;
+  column_name: string;
+  foreign_table_name: string;
+  foreign_column_name: string;
+  update_rule: string;
+  delete_rule: string;
+}
+
+interface IndexRow {
+  indexname: string;
+  indexdef: string;
+}
 
 const pool = new Pool({
   host: 'localhost',
@@ -15,7 +45,7 @@ async function extractSchema() {
     console.log('🔍 Extracting schema from local database...');
 
     // Get all tables
-    const tablesResult = await client.query(`
+    const tablesResult = await client.query<TableRow>(`
       SELECT table_name 
       FROM information_schema.tables 
       WHERE table_schema = 'public'
@@ -33,7 +63,7 @@ async function extractSchema() {
       console.log(`\n📋 Extracting structure for table: ${tableName}`);
 
       // Get column information
-      const columnsResult = await client.query(`
+      const columnsResult = await client.query<ColumnRow>(`
         SELECT 
           column_name,
           data_type,
@@ -47,7 +77,7 @@ async function extractSchema() {
       `, [tableName]);
 
       // Get primary key constraints
-      const pkResult = await client.query(`
+      const pkResult = await client.query<PrimaryKeyRow>(`
         SELECT c.column_name
         FROM information_schema.table_constraints tc
         JOIN information_schema.constraint_column_usage AS ccu USING (constraint_schema, constraint_name)
@@ -59,7 +89,7 @@ async function extractSchema() {
       `, [tableName]);
 
       // Get foreign key constraints
-      const fkResult = await client.query(`
+      const fkResult = await client.query<ForeignKeyRow>(`
         SELECT
           tc.constraint_name,
           kcu.column_name,
@@ -109,7 +139,7 @@ async function extractSchema() {
       schemaSQL += '\n);\n\n';
 
       // Get indexes
-      const indexesResult = await client.query(`
+      const indexesResult = await client.query<IndexRow>(`
         SELECT indexname, indexdef
         FROM pg_indexes
         WHERE schemaname = 'public'
