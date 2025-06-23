@@ -24,7 +24,7 @@ export default function LoginForm() {
     setError('');
 
     try {
-      console.log('Attempting login with:', credentials.employee_id);
+      console.log('Submitting login form:', { employee_id: credentials.employee_id });
       
       const response = await fetch('/api/auth/login', {
         method: 'POST',
@@ -36,18 +36,27 @@ export default function LoginForm() {
       });
 
       const data = await response.json();
-      console.log('Login response:', data);
+      console.log('Login response:', { status: response.status, success: data.success });
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Login failed');
+      }
 
       if (data.success) {
-        console.log('Login successful, redirecting...');
-        // Force a hard navigation to avoid client-side routing issues
-        window.location.href = '/dashboard';
+        // Get the redirect URL from query params or default to dashboard
+        const params = new URLSearchParams(window.location.search);
+        const redirectTo = params.get('redirect') || '/dashboard';
+        
+        console.log('Login successful, redirecting to:', redirectTo);
+        
+        // Use router for client-side navigation
+        window.location.href = redirectTo;
       } else {
-        setError(data.message || 'Login failed');
+        setError(data.error || 'Invalid credentials');
       }
     } catch (error) {
       console.error('Login error:', error);
-      setError('Network error. Please try again.');
+      setError(error instanceof Error ? error.message : 'An error occurred during login');
     } finally {
       setLoading(false);
     }

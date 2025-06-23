@@ -71,36 +71,21 @@ let pool: Pool | null = null;
 
 function getPool(): Pool {
   if (!pool) {
-    const config = getDbConfig();
+    // Simple development configuration
+    const config = {
+      host: 'localhost',
+      port: 5432,
+      database: 'ooak_ai_dev',
+      user: process.env.USER || 'postgres', // Use system username or default to postgres
+      password: '',
+      ssl: false
+    };
+    
     pool = new Pool(config);
     
-    pool.on('connect', () => {
-      const env = process.env.NODE_ENV || 'development';
-      const user = 'user' in config ? config.user : 'via connection string';
-      console.log(`🔗 Connected to PostgreSQL Database (${env} mode) as ${user}`);
-    });
-    
-    pool.on('error', (err: PostgresError) => {
-      console.error('❌ Database pool error:', {
-        code: err.code,
-        message: err.message,
-        detail: err.detail,
-        hint: err.hint,
-        where: err.where
-      });
-    });
-    
-    // Graceful shutdown
-    process.on('SIGINT', async () => {
-      console.log('🔒 Closing database pool...');
-      await pool?.end();
-      process.exit(0);
-    });
-    
-    process.on('SIGTERM', async () => {
-      console.log('🔒 Closing database pool...');
-      await pool?.end();
-      process.exit(0);
+    pool.on('error', (err: Error) => {
+      console.error('Unexpected error on idle client', err);
+      process.exit(-1);
     });
   }
   

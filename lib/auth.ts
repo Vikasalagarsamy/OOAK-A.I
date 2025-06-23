@@ -1,15 +1,11 @@
 import bcrypt from 'bcryptjs';
-import jwt from 'jsonwebtoken';
 import { cookies } from 'next/headers';
 import { query } from './db';
 import { AuthUser, JWTPayload, Permission, ROLE_PERMISSIONS } from '@/types/auth';
 import { jwtVerify, SignJWT } from 'jose';
 import { nanoid } from 'nanoid';
 
-// Use string for jsonwebtoken
-const JWT_SECRET_STRING = process.env.JWT_SECRET || 'your-secret-key';
-// Use Uint8Array for jose
-const JWT_SECRET = new TextEncoder().encode(JWT_SECRET_STRING);
+const JWT_SECRET = new TextEncoder().encode(process.env.JWT_SECRET || 'your-secret-key');
 const JWT_EXPIRES_IN = '7d';
 const COOKIE_NAME = 'ooak_auth_token';
 
@@ -25,16 +21,23 @@ export class AuthService {
     return bcrypt.compare(password, hash);
   }
 
-  // Generate JWT token
-  static generateToken(payload: JWTPayload): string {
-    return jwt.sign(payload, JWT_SECRET_STRING, { expiresIn: JWT_EXPIRES_IN });
+  // Generate JWT token using jose
+  static async generateToken(payload: JWTPayload): Promise<string> {
+    const token = await new SignJWT(payload)
+      .setProtectedHeader({ alg: 'HS256' })
+      .setIssuedAt()
+      .setExpirationTime(JWT_EXPIRES_IN)
+      .sign(JWT_SECRET);
+    return token;
   }
 
-  // Verify JWT token
-  static verifyToken(token: string): JWTPayload | null {
+  // Verify JWT token using jose
+  static async verifyToken(token: string): Promise<JWTPayload | null> {
     try {
-      return jwt.verify(token, JWT_SECRET_STRING) as JWTPayload;
+      const { payload } = await jwtVerify(token, JWT_SECRET);
+      return payload as JWTPayload;
     } catch (error) {
+      console.error('Token verification error:', error);
       return null;
     }
   }
@@ -148,7 +151,7 @@ export class AuthService {
         return null;
       }
 
-      const payload = this.verifyToken(authToken);
+      const payload = await this.verifyToken(authToken);
       if (!payload) {
         return null;
       }
@@ -163,10 +166,13 @@ export class AuthService {
           e.email,
           e.department_id,
           e.designation_id,
-          d.name as designation_name
+          d.name as designation_name,
+          ARRAY_AGG(DISTINCT dmp.menu_item_id) as permissions
         FROM employees e
         LEFT JOIN designations d ON e.designation_id = d.id
-        WHERE e.id = $1 AND e.status = 'active'
+        LEFT JOIN designation_menu_permissions dmp ON d.id = dmp.designation_id AND dmp.can_view = true
+        WHERE e.id = $1 AND e.is_active = true
+        GROUP BY e.id, e.first_name, e.last_name, e.email, e.department_id, e.designation_id, d.name
       `, [payload.userId]);
 
       if (!result.success || !result.data || result.data.length === 0) {

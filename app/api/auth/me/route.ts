@@ -1,14 +1,24 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { AuthService } from '@/lib/auth';
+import { AUTH_COOKIE_NAME } from '@/lib/constants';
 
 export async function GET(request: NextRequest) {
   try {
     // Get token from cookie
-    const token = request.cookies.get('ooak_auth_token')?.value;
+    const token = request.cookies.get(AUTH_COOKIE_NAME)?.value;
     
     if (!token) {
       return NextResponse.json(
         { success: false, message: 'Not authenticated' },
+        { status: 401 }
+      );
+    }
+
+    // Verify token first
+    const payload = await AuthService.verifyToken(token);
+    if (!payload) {
+      return NextResponse.json(
+        { success: false, message: 'Invalid or expired token' },
         { status: 401 }
       );
     }
@@ -18,7 +28,7 @@ export async function GET(request: NextRequest) {
     
     if (!user) {
       return NextResponse.json(
-        { success: false, message: 'Invalid or expired token' },
+        { success: false, message: 'User not found' },
         { status: 401 }
       );
     }

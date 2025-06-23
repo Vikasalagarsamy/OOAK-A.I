@@ -1,79 +1,119 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { cookies } from 'next/headers';
-import db from '@/lib/db';
-import { AuthServerService } from '@/lib/auth-server';
-import { Permission } from '@/types/auth';
+import { cookies } from 'next/headers'
+import { NextResponse } from 'next/server'
+import bcrypt from 'bcryptjs'
+import db from '@/lib/db'
+import { AUTH_COOKIE_NAME, AUTH_COOKIE_OPTIONS, AUTH_ERRORS } from '@/lib/constants'
+import { AuthService } from '@/lib/auth'
 
 export async function POST(request: Request) {
   try {
-    const { employee_id, password } = await request.json();
+    const body = await request.json()
+    const { employee_id, password } = body
 
-    // Validate input
+    console.log('Login attempt for:', employee_id)
+
+    // Input validation
     if (!employee_id || !password) {
-      return NextResponse.json({ 
-        success: false, 
-        message: 'Employee ID and password are required' 
-      }, { status: 400 });
+      return NextResponse.json(
+        { error: 'Employee ID and password are required' },
+        { status: 400 }
+      )
     }
 
     // Get employee from database
     const result = await db.query(
-      'SELECT e.*, d.name as designation_name, d.permissions FROM employees e LEFT JOIN designations d ON e.designation_id = d.id WHERE e.employee_id = $1',
+      `SELECT 
+        e.id,
+        e.employee_id,
+        e.password_hash,
+        e.first_name,
+        e.last_name,
+        e.designation_id,
+        d.name as designation_name,
+        ARRAY_AGG(DISTINCT dmp.menu_item_id) as permissions
+      FROM employees e 
+      LEFT JOIN designations d ON e.designation_id = d.id 
+      LEFT JOIN designation_menu_permissions dmp ON d.id = dmp.designation_id AND dmp.can_view = true
+      WHERE e.employee_id = $1 AND e.is_active = true
+      GROUP BY e.id, e.first_name, e.last_name, d.name, e.designation_id, e.password_hash`,
       [employee_id]
-    );
+    )
 
-    const employee = result.rows[0];
+    const employee = result.rows[0]
 
-    if (!employee) {
-      return NextResponse.json({ 
-        success: false, 
-        message: 'Invalid credentials' 
-      }, { status: 401 });
+    console.log('Employee found:', !!employee)
+
+    // Employee not found or invalid password
+    if (!employee || !employee.password_hash) {
+      return NextResponse.json(
+        { error: AUTH_ERRORS.INVALID_CREDENTIALS },
+        { status: 401 }
+      )
     }
 
-    // Verify password
-    const isValid = await AuthServerService.verifyPassword(password, employee.password);
+    const isValidPassword = await bcrypt.compare(password, employee.password_hash)
+    
+    console.log('Password valid:', isValidPassword)
 
-    if (!isValid) {
-      return NextResponse.json({ 
-        success: false, 
-        message: 'Invalid credentials' 
-      }, { status: 401 });
+    if (!isValidPassword) {
+      return NextResponse.json(
+        { error: AUTH_ERRORS.INVALID_CREDENTIALS },
+        { status: 401 }
+      )
     }
 
-    // Generate JWT token with only the required fields from JWTPayload type
-    const token = AuthServerService.generateToken({
+    // Create JWT token
+    const token = await AuthService.generateToken({
       userId: employee.id,
       employee_id: employee.employee_id,
-      designation_id: employee.designation_id || 0
-    });
+      designation_id: employee.designation_id
+    })
 
-    // Set cookie
-    cookies().set('auth_token', token, {
+    // Create the response object first
+    const response = new NextResponse(
+      JSON.stringify({
+        success: true,
+        user: {
+          id: employee.id,
+          employee_id: employee.employee_id,
+          name: `${employee.first_name} ${employee.last_name}`,
+          designation: {
+            id: employee.designation_id,
+            name: employee.designation_name
+          },
+          permissions: employee.permissions || []
+        }
+      }),
+      {
+        status: 200,
+        headers: {
+          'Content-Type': 'application/json',
+        }
+      }
+    )
+
+    // Set the cookie on the response
+    response.cookies.set(AUTH_COOKIE_NAME, token, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
       sameSite: 'lax',
+      path: '/',
       maxAge: 7 * 24 * 60 * 60 // 7 days
-    });
+    })
 
-    // Return user data
-    return NextResponse.json({
-      success: true,
-      user: {
-        id: employee.id,
-        employee_id: employee.employee_id,
-        name: employee.name,
-        designation_id: employee.designation_id,
-        designation_name: employee.designation_name,
-        permissions: employee.permissions || []
-      }
-    });
+    console.log('Login successful, cookie set:', {
+      cookieName: AUTH_COOKIE_NAME,
+      tokenLength: token.length,
+      secure: process.env.NODE_ENV === 'production'
+    })
+
+    return response
 
   } catch (error) {
-    console.error('Login error:', error);
-    return NextResponse.json({ 
-      success: false, 
-      message: 'Internal server error' 
-    }, { status: 500 });
+    console.error('Login error:', error)
+    return NextResponse.json(
+      { error: AUTH_ERRORS.SERVER_ERROR },
+      { status: 500 }
+    )
   }
 } 

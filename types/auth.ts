@@ -1,3 +1,5 @@
+import type { JWTPayload as JoseJWTPayload } from 'jose';
+
 export interface Employee {
   id: number;
   employee_id: string;
@@ -44,7 +46,7 @@ export interface AuthResponse {
   message?: string;
 }
 
-export interface JWTPayload {
+export interface JWTPayload extends JoseJWTPayload {
   userId: number;
   employee_id: string;
   designation_id: number;
