@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { getDbPool } from '@/lib/db';
 import { AuthService } from '@/lib/auth';
+import { QueryResult } from 'pg';
 
 interface MenuItem {
   id: number;
@@ -105,7 +106,7 @@ export async function GET(request: Request) {
     const rootItems: MenuItem[] = [];
 
     // First pass: Create all menu items
-    result.rows.forEach(item => {
+    result.rows.forEach((item: MenuItem) => {
       menuMap.set(item.id, {
         ...item,
         children: []
@@ -113,7 +114,7 @@ export async function GET(request: Request) {
     });
 
     // Second pass: Build the tree structure
-    result.rows.forEach(item => {
+    result.rows.forEach((item: MenuItem) => {
       const menuItem = menuMap.get(item.id);
       if (item.parent_id === null) {
         rootItems.push(menuItem!);
