@@ -162,10 +162,12 @@ export interface Department {
 export interface Branch {
   id: number;
   name: string;
-  location: string;
-  contact_email?: string;
-  contact_phone?: string;
-  is_active: boolean;
+  company_id: number;
+  branch_code: string | null;
+  address: string;
+  phone: string | null;
+  email: string | null;
+  location: string | null;
 }
 
 export interface AIContact {
@@ -277,4 +279,44 @@ export interface RecentActivity {
   description: string;
   timestamp: Date;
   user_name?: string;
+}
+
+export interface LeadSource {
+  id: number;
+  name: string;
+  description: string | null;
+  is_active: boolean;
+}
+
+export interface LeadFormValues {
+  company_id: number;
+  branch_id: number;
+  client_name: string;
+  bride_name?: string;
+  groom_name?: string;
+  email?: string;
+  phone: string;
+  whatsapp_number: string;
+  country_code: string;
+  whatsapp_country_code: string;
+  is_whatsapp: boolean;
+  priority: 'low' | 'medium' | 'high';
+  tags: string[];
+  source_id?: number;
+  notes?: string;
+  wedding_date?: string;
+  venue_preference?: string;
+  guest_count?: number;
+  budget_range?: string;
+  description?: string;
+  location?: string;
+}
+
+export interface Company {
+  id: number;
+  name: string;
+  company_code: string;
+  address: string | null;
+  phone: string | null;
+  email: string | null;
 } 

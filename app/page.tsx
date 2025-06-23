@@ -6,7 +6,7 @@ export default function RootPage() {
   const authToken = cookieStore.get('ooak_auth_token');
 
   if (authToken) {
-    redirect('/(authenticated)/dashboard');
+    redirect('/dashboard');
   } else {
     redirect('/login');
   }

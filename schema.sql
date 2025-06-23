@@ -156,4 +156,71 @@ WHERE sort_order > (SELECT sort_order FROM dashboard_order);
 -- Update menu items to start with Sales
 UPDATE menu_items 
 SET sort_order = 1 
-WHERE name = 'Sales' AND parent_id IS NULL; 
+WHERE name = 'Sales' AND parent_id IS NULL;
+
+-- Companies and Branches Schema
+
+-- Check and create companies table if it doesn't exist
+CREATE TABLE IF NOT EXISTS companies (
+    id SERIAL PRIMARY KEY,
+    name VARCHAR(255) NOT NULL,
+    address TEXT,
+    city VARCHAR(100),
+    state VARCHAR(100),
+    country VARCHAR(100),
+    is_active BOOLEAN NOT NULL DEFAULT true,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Check and create branches table if it doesn't exist
+CREATE TABLE IF NOT EXISTS branches (
+    id SERIAL PRIMARY KEY,
+    name VARCHAR(255) NOT NULL,
+    company_id INTEGER NOT NULL REFERENCES companies(id) ON DELETE CASCADE,
+    address TEXT,
+    city VARCHAR(100),
+    state VARCHAR(100),
+    country VARCHAR(100),
+    is_active BOOLEAN NOT NULL DEFAULT true,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Create triggers for updating timestamps
+CREATE TRIGGER update_companies_modtime
+    BEFORE UPDATE ON companies
+    FOR EACH ROW
+    EXECUTE FUNCTION update_updated_at_column();
+
+CREATE TRIGGER update_branches_modtime
+    BEFORE UPDATE ON branches
+    FOR EACH ROW
+    EXECUTE FUNCTION update_updated_at_column();
+
+-- Create indexes for better performance
+CREATE INDEX idx_branches_company_id ON branches(company_id);
+
+-- Insert sample data
+INSERT INTO companies (name, city, country, is_active)
+VALUES 
+    ('OOAK Studios - Chennai', 'Chennai', 'India', true),
+    ('OOAK Studios - Bangalore', 'Bangalore', 'India', true)
+ON CONFLICT DO NOTHING;
+
+WITH chennai_company AS (
+    SELECT id FROM companies WHERE name = 'OOAK Studios - Chennai'
+),
+bangalore_company AS (
+    SELECT id FROM companies WHERE name = 'OOAK Studios - Bangalore'
+)
+INSERT INTO branches (name, company_id, city, country, is_active)
+SELECT 'T. Nagar Branch', id, 'Chennai', 'India', true
+FROM chennai_company
+UNION ALL
+SELECT 'Anna Nagar Branch', id, 'Chennai', 'India', true
+FROM chennai_company
+UNION ALL
+SELECT 'Koramangala Branch', id, 'Bangalore', 'India', true
+FROM bangalore_company
+ON CONFLICT DO NOTHING; 

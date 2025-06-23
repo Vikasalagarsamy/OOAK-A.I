@@ -3,8 +3,12 @@ import jwt from 'jsonwebtoken';
 import { cookies } from 'next/headers';
 import { query } from './db';
 import { AuthUser, JWTPayload, Permission, ROLE_PERMISSIONS } from '@/types/auth';
+import { jwtVerify, SignJWT } from 'jose';
+import { nanoid } from 'nanoid';
 
-const JWT_SECRET = process.env.JWT_SECRET || 'ooak-ai-super-secret-key-change-in-production';
+const JWT_SECRET = new TextEncoder().encode(
+  process.env.JWT_SECRET || 'your-secret-key'
+);
 const JWT_EXPIRES_IN = '7d';
 const COOKIE_NAME = 'ooak_auth_token';
 
@@ -226,4 +230,29 @@ export function requirePermission(user: AuthUser | null, permission: Permission)
   }
 
   return AuthService.hasPermission(user.permissions, permission);
+}
+
+export async function verifyAuth(token: string): Promise<JWTPayload | null> {
+  try {
+    const verified = await jwtVerify(token, JWT_SECRET);
+    return verified.payload as JWTPayload;
+  } catch (error) {
+    console.error('Error verifying token:', error);
+    return null;
+  }
+}
+
+export async function signToken(payload: JWTPayload): Promise<string> {
+  try {
+    const token = await new SignJWT(payload)
+      .setProtectedHeader({ alg: 'HS256' })
+      .setJti(nanoid())
+      .setIssuedAt()
+      .setExpirationTime('7d')
+      .sign(JWT_SECRET);
+    return token;
+  } catch (error) {
+    console.error('Error signing token:', error);
+    throw error;
+  }
 } 

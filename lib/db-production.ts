@@ -1,71 +1,88 @@
-import { Pool, PoolClient, QueryResult } from 'pg';
+const { Pool } = require('pg');
 
-// Production database configuration with fallbacks
-const getDbConfig = () => {
-  // Render.com provides DATABASE_URL automatically
-  if (process.env.DATABASE_URL) {
-    return {
-      connectionString: process.env.DATABASE_URL,
-      ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false,
-      max: 20,
-      idleTimeoutMillis: 30000,
-      connectionTimeoutMillis: 10000,
-    };
-  }
-  
-  // Fallback to individual environment variables
-  return {
-    host: process.env.POSTGRES_HOST || 'localhost',
-    port: parseInt(process.env.POSTGRES_PORT || '5432'),
-    database: process.env.POSTGRES_DB || 'ooak_ai_db',
-    user: process.env.POSTGRES_USER || 'postgres',
-    password: process.env.POSTGRES_PASSWORD || '',
-    ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false,
-    max: 20,
-    idleTimeoutMillis: 30000,
-    connectionTimeoutMillis: 10000,
-  };
+// Production database configuration
+const PRODUCTION_CONFIG = {
+  host: 'dpg-d1bf04er433s739icgmg-a.singapore-postgres.render.com',
+  database: 'ooak_ai_db',
+  user: 'ooak_admin',
+  password: 'mSglqEawN72hkoEj8tSNF5qv9vJr3U6k',
+  port: 5432,
+  ssl: { rejectUnauthorized: false }
 };
 
-// Create connection pool singleton
-let pool: Pool | null = null;
+const PRODUCTION_DATABASE_URL = 'postgresql://ooak_admin:mSglqEawN72hkoEj8tSNF5qv9vJr3U6k@dpg-d1bf04er433s739icgmg-a.singapore-postgres.render.com/ooak_ai_db';
 
-function getPool(): Pool {
-  if (!pool) {
-    const config = getDbConfig();
-    pool = new Pool(config);
-    
-    pool.on('connect', () => {
-      console.log('🔗 Connected to OOAK.AI Production Database');
-    });
-    
-    pool.on('error', (err) => {
-      console.error('❌ Production database pool error:', err);
-    });
-    
-    // Graceful shutdown
-    process.on('SIGINT', async () => {
-      console.log('🔒 Closing database pool...');
-      await pool?.end();
-      process.exit(0);
-    });
-    
-    process.on('SIGTERM', async () => {
-      console.log('🔒 Closing database pool...');
-      await pool?.end();
-      process.exit(0);
-    });
+// Create a production pool with proper error handling
+const productionPool = new Pool({
+  connectionString: PRODUCTION_DATABASE_URL,
+  ssl: { rejectUnauthorized: false },
+  max: 5,
+  idleTimeoutMillis: 30000,
+  connectionTimeoutMillis: 10000,
+});
+
+// Helper function to get a production client
+async function getProductionClient() {
+  try {
+    const client = await productionPool.connect();
+    return client;
+  } catch (error) {
+    console.error('Failed to connect to production database:', error);
+    throw error;
   }
-  
-  return pool;
 }
 
+// Helper function to run migrations on production
+async function runProductionMigration(migrationSQL, description) {
+  const client = await getProductionClient();
+  try {
+    await client.query('BEGIN');
+    console.log(`🚀 Running migration: ${description}`);
+    
+    await client.query(migrationSQL);
+    
+    await client.query('COMMIT');
+    console.log('✅ Migration completed successfully');
+  } catch (error) {
+    await client.query('ROLLBACK');
+    console.error('❌ Migration failed:', error);
+    throw error;
+  } finally {
+    client.release();
+  }
+}
+
+// Helper function to verify production schema
+async function verifyProductionSchema() {
+  const client = await getProductionClient();
+  try {
+    const tables = await client.query(`
+      SELECT table_name, column_name, data_type 
+      FROM information_schema.columns 
+      WHERE table_schema = 'public'
+      ORDER BY table_name, ordinal_position;
+    `);
+    return tables.rows;
+  } finally {
+    client.release();
+  }
+}
+
+module.exports = {
+  PRODUCTION_CONFIG,
+  PRODUCTION_DATABASE_URL,
+  productionPool,
+  getProductionClient,
+  runProductionMigration,
+  verifyProductionSchema
+};
+
 // Enhanced query function with retry logic for production
-export async function query<T = any>(
+async function query<T = any>(
   text: string, 
   params?: any[]
 ): Promise<{ data: T[] | null; success: boolean; error?: string }> {
-  const pool = getPool();
+  const pool = productionPool;
   let client: PoolClient | null = null;
   let retries = 3;
   
@@ -107,10 +124,10 @@ export async function query<T = any>(
 }
 
 // Production-ready transaction function
-export async function transaction<T>(
+async function transaction<T>(
   callback: (queryFn: typeof query) => Promise<T>
 ): Promise<{ data: T | null; success: boolean; error?: string }> {
-  const pool = getPool();
+  const pool = productionPool;
   let client: PoolClient | null = null;
   
   try {
@@ -152,7 +169,7 @@ export async function transaction<T>(
 }
 
 // Health check for production monitoring
-export async function healthCheck(): Promise<{ healthy: boolean; latency: number; error?: string }> {
+async function healthCheck(): Promise<{ healthy: boolean; latency: number; error?: string }> {
   const startTime = Date.now();
   
   try {
@@ -182,7 +199,7 @@ export async function healthCheck(): Promise<{ healthy: boolean; latency: number
 }
 
 // Export connection pool for advanced usage
-export const getDbPool = getPool;
+const getDbPool = productionPool;
 
 // Export for environment-specific usage
-export const isProduction = process.env.NODE_ENV === 'production'; 
+const isProduction = process.env.NODE_ENV === 'production'; 
