@@ -1,39 +1,46 @@
 import { NextResponse } from 'next/server';
-import db from '@/lib/db';
-import { Branch } from '@/types/organization';
+import { getDbPool } from '@/lib/db';
+import { Pool } from 'pg';
 
 export async function GET() {
+  const pool: Pool = getDbPool();
+
   try {
-    const result = await db.query<Branch>(`
-      SELECT b.*, c.name as company_name
+    const result = await pool.query(`
+      SELECT b.id, b.name, b.company_id, c.name as company_name
       FROM branches b
       LEFT JOIN companies c ON b.company_id = c.id
       ORDER BY b.name
     `);
 
-    return NextResponse.json(result.rows);
+    return NextResponse.json({
+      success: true,
+      branches: result.rows
+    });
   } catch (error) {
     console.error('Error fetching branches:', error);
     return NextResponse.json(
-      { error: 'Failed to fetch branches' },
+      { success: false, error: 'Failed to fetch branches' },
       { status: 500 }
     );
   }
 }
 
 export async function POST(request: Request) {
+  const pool: Pool = getDbPool();
+
   try {
     const data = await request.json();
 
     // Validate required fields
     if (!data.name || !data.company_id || !data.address) {
       return NextResponse.json(
-        { error: 'Name, company ID, and address are required' },
+        { success: false, error: 'Name, company ID, and address are required' },
         { status: 400 }
       );
     }
 
-    const result = await db.query<Branch>(
+    const result = await pool.query(
       `INSERT INTO branches (
         name,
         company_id,
@@ -59,11 +66,14 @@ export async function POST(request: Request) {
       ]
     );
 
-    return NextResponse.json(result.rows[0]);
+    return NextResponse.json({
+      success: true,
+      branch: result.rows[0]
+    });
   } catch (error) {
     console.error('Error creating branch:', error);
     return NextResponse.json(
-      { error: 'Failed to create branch' },
+      { success: false, error: 'Failed to create branch' },
       { status: 500 }
     );
   }

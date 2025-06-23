@@ -1,27 +1,36 @@
-import { NextResponse } from 'next/server';
-import { query } from '@/lib/db';
-import { Company, CompanyFormData } from '@/types/organization';
+import { NextResponse } from 'next/server'
+import { getDbPool } from '@/lib/db'
+import { Pool } from 'pg'
 
+// GET /api/organization/companies
 export async function GET() {
-  const result = await query<Company>(
-    'SELECT * FROM companies ORDER BY name ASC'
-  );
+  const pool: Pool = getDbPool()
 
-  if (!result.success) {
+  try {
+    const result = await pool.query(
+      'SELECT id, name FROM companies ORDER BY name'
+    )
+
+    return NextResponse.json({
+      success: true,
+      companies: result.rows
+    })
+  } catch (error) {
+    console.error('Error fetching companies:', error)
     return NextResponse.json(
-      { error: result.error || 'Failed to fetch companies' },
+      { success: false, error: 'Failed to fetch companies' },
       { status: 500 }
-    );
+    )
   }
-
-  return NextResponse.json(result.data);
 }
 
 export async function POST(request: Request) {
+  const pool: Pool = getDbPool()
+  
   try {
-    const data: CompanyFormData = await request.json();
+    const data = await request.json();
 
-    const result = await query<Company>(
+    const result = await pool.query(
       `INSERT INTO companies (
         name, registration_number, tax_id, address, phone, 
         email, website, founded_date, company_code
@@ -40,18 +49,14 @@ export async function POST(request: Request) {
       ]
     );
 
-    if (!result.success) {
-      return NextResponse.json(
-        { error: result.error || 'Failed to create company' },
-        { status: 500 }
-      );
-    }
-
-    return NextResponse.json(result.data?.[0]);
+    return NextResponse.json({
+      success: true,
+      company: result.rows[0]
+    });
   } catch (error) {
     console.error('Error creating company:', error);
     return NextResponse.json(
-      { error: 'Failed to create company' },
+      { success: false, error: 'Failed to create company' },
       { status: 500 }
     );
   }
