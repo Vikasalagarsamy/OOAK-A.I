@@ -1,4 +1,4 @@
-const { Pool } = require('pg');
+import { Pool, PoolClient } from 'pg';
 
 // Production database configuration
 const PRODUCTION_CONFIG = {
@@ -22,7 +22,7 @@ const productionPool = new Pool({
 });
 
 // Helper function to get a production client
-async function getProductionClient() {
+export const getProductionClient = async (): Promise<PoolClient> => {
   try {
     const client = await productionPool.connect();
     return client;
@@ -30,10 +30,10 @@ async function getProductionClient() {
     console.error('Failed to connect to production database:', error);
     throw error;
   }
-}
+};
 
 // Helper function to run migrations on production
-async function runProductionMigration(migrationSQL, description) {
+export const runProductionMigration = async (migrationSQL: string, description: string): Promise<void> => {
   const client = await getProductionClient();
   try {
     await client.query('BEGIN');
@@ -50,10 +50,10 @@ async function runProductionMigration(migrationSQL, description) {
   } finally {
     client.release();
   }
-}
+};
 
 // Helper function to verify production schema
-async function verifyProductionSchema() {
+export const verifyProductionSchema = async () => {
   const client = await getProductionClient();
   try {
     const tables = await client.query(`
@@ -66,22 +66,13 @@ async function verifyProductionSchema() {
   } finally {
     client.release();
   }
-}
-
-module.exports = {
-  PRODUCTION_CONFIG,
-  PRODUCTION_DATABASE_URL,
-  productionPool,
-  getProductionClient,
-  runProductionMigration,
-  verifyProductionSchema
 };
 
 // Enhanced query function with retry logic for production
-async function query<T = any>(
+export const query = async <T = any>(
   text: string, 
   params?: any[]
-): Promise<{ data: T[] | null; success: boolean; error?: string }> {
+): Promise<{ data: T[] | null; success: boolean; error?: string }> => {
   const pool = productionPool;
   let client: PoolClient | null = null;
   let retries = 3;
@@ -121,12 +112,12 @@ async function query<T = any>(
     success: false,
     error: 'Maximum retries exceeded'
   };
-}
+};
 
 // Production-ready transaction function
-async function transaction<T>(
+export const transaction = async <T>(
   callback: (queryFn: typeof query) => Promise<T>
-): Promise<{ data: T | null; success: boolean; error?: string }> {
+): Promise<{ data: T | null; success: boolean; error?: string }> => {
   const pool = productionPool;
   let client: PoolClient | null = null;
   
@@ -166,10 +157,10 @@ async function transaction<T>(
       client.release();
     }
   }
-}
+};
 
 // Health check for production monitoring
-async function healthCheck(): Promise<{ healthy: boolean; latency: number; error?: string }> {
+export const healthCheck = async (): Promise<{ healthy: boolean; latency: number; error?: string }> => {
   const startTime = Date.now();
   
   try {
@@ -196,10 +187,10 @@ async function healthCheck(): Promise<{ healthy: boolean; latency: number; error
       error: error instanceof Error ? error.message : 'Health check failed'
     };
   }
-}
+};
 
-// Export connection pool for advanced usage
-const getDbPool = productionPool;
-
-// Export for environment-specific usage
-const isProduction = process.env.NODE_ENV === 'production'; 
+export {
+  PRODUCTION_CONFIG,
+  PRODUCTION_DATABASE_URL,
+  productionPool,
+}; 
