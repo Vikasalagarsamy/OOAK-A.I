@@ -6,9 +6,10 @@ import { AuthUser, JWTPayload, Permission, ROLE_PERMISSIONS } from '@/types/auth
 import { jwtVerify, SignJWT } from 'jose';
 import { nanoid } from 'nanoid';
 
-const JWT_SECRET = new TextEncoder().encode(
-  process.env.JWT_SECRET || 'your-secret-key'
-);
+// Use string for jsonwebtoken
+const JWT_SECRET_STRING = process.env.JWT_SECRET || 'your-secret-key';
+// Use Uint8Array for jose
+const JWT_SECRET = new TextEncoder().encode(JWT_SECRET_STRING);
 const JWT_EXPIRES_IN = '7d';
 const COOKIE_NAME = 'ooak_auth_token';
 
@@ -26,13 +27,13 @@ export class AuthService {
 
   // Generate JWT token
   static generateToken(payload: JWTPayload): string {
-    return jwt.sign(payload, JWT_SECRET, { expiresIn: JWT_EXPIRES_IN });
+    return jwt.sign(payload, JWT_SECRET_STRING, { expiresIn: JWT_EXPIRES_IN });
   }
 
   // Verify JWT token
   static verifyToken(token: string): JWTPayload | null {
     try {
-      return jwt.verify(token, JWT_SECRET) as JWTPayload;
+      return jwt.verify(token, JWT_SECRET_STRING) as JWTPayload;
     } catch (error) {
       return null;
     }
@@ -234,25 +235,32 @@ export function requirePermission(user: AuthUser | null, permission: Permission)
 
 export async function verifyAuth(token: string): Promise<JWTPayload | null> {
   try {
-    const verified = await jwtVerify(token, JWT_SECRET);
-    return verified.payload as JWTPayload;
+    const { payload } = await jwtVerify(token, JWT_SECRET);
+    return {
+      userId: payload.userId as number,
+      employee_id: payload.employee_id as string,
+      designation_id: payload.designation_id as number
+    };
   } catch (error) {
-    console.error('Error verifying token:', error);
+    console.error('Token verification error:', error);
     return null;
   }
 }
 
 export async function signToken(payload: JWTPayload): Promise<string> {
   try {
-    const token = await new SignJWT(payload)
+    const token = await new SignJWT({
+      userId: payload.userId,
+      employee_id: payload.employee_id,
+      designation_id: payload.designation_id
+    })
       .setProtectedHeader({ alg: 'HS256' })
-      .setJti(nanoid())
       .setIssuedAt()
-      .setExpirationTime('7d')
+      .setExpirationTime(JWT_EXPIRES_IN)
       .sign(JWT_SECRET);
     return token;
   } catch (error) {
-    console.error('Error signing token:', error);
+    console.error('Token signing error:', error);
     throw error;
   }
 } 
