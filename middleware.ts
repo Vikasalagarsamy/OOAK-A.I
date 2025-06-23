@@ -11,8 +11,9 @@ export const config = {
      * 1. _next/static (static files)
      * 2. _next/image (image optimization files)
      * 3. favicon.ico (favicon file)
+     * 4. api routes (they handle their own auth)
      */
-    '/((?!_next/static|_next/image|favicon.ico).*)',
+    '/((?!_next/static|_next/image|favicon.ico|api).*)',
   ],
 };
 
@@ -23,7 +24,6 @@ export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
   console.log('Middleware - Path:', pathname);
-  console.log('Middleware - Cookie:', request.cookies.get(AUTH_COOKIE_NAME));
 
   // Always allow public routes
   if (PUBLIC_ROUTES.includes(pathname as typeof PUBLIC_ROUTES[number])) {
@@ -31,10 +31,9 @@ export async function middleware(request: NextRequest) {
     return NextResponse.next();
   }
 
-  // Check for static files and API health endpoint
+  // Check for static files
   if (
     pathname.startsWith('/_next') || // Static files
-    pathname.startsWith('/api/health') || // Health check endpoint
     pathname.includes('.') // Files with extensions (e.g. favicon.ico)
   ) {
     return NextResponse.next();

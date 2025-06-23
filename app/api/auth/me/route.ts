@@ -2,6 +2,9 @@ import { NextRequest, NextResponse } from 'next/server';
 import { AuthService } from '@/lib/auth';
 import { AUTH_COOKIE_NAME } from '@/lib/constants';
 
+// Specify Node.js runtime
+export const runtime = 'nodejs'
+
 export async function GET(request: NextRequest) {
   try {
     // Get token from cookie

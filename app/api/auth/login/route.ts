@@ -5,6 +5,9 @@ import db from '@/lib/db'
 import { AUTH_COOKIE_NAME, AUTH_COOKIE_OPTIONS, AUTH_ERRORS } from '@/lib/constants'
 import { AuthService } from '@/lib/auth'
 
+// Specify Node.js runtime
+export const runtime = 'nodejs'
+
 export async function POST(request: Request) {
   try {
     const body = await request.json()
