@@ -3,7 +3,6 @@ import { cookies } from 'next/headers';
 import { query } from './db';
 import { AuthUser, JWTPayload, Permission, ROLE_PERMISSIONS } from '@/types/auth';
 import { jwtVerify, SignJWT } from 'jose';
-import { nanoid } from 'nanoid';
 
 const JWT_SECRET = new TextEncoder().encode(process.env.JWT_SECRET || 'your-secret-key');
 const JWT_EXPIRES_IN = '7d';
