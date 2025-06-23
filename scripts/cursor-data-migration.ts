@@ -1,6 +1,6 @@
-const { runProductionMigration, getProductionClient } = require('../lib/db-production');
-const fs = require('fs/promises');
-const path = require('path');
+import { runProductionMigration, getProductionClient } from '../lib/db-production';
+import { promises as fs } from 'fs';
+import path from 'path';
 
 async function runDataMigration() {
   try {

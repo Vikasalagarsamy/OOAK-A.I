@@ -1,6 +1,6 @@
-const { runProductionMigration, verifyProductionSchema } = require('../lib/db-production');
-const fs = require('fs/promises');
-const path = require('path');
+import { runProductionMigration, verifyProductionSchema } from '../lib/db-production';
+import { promises as fs } from 'fs';
+import path from 'path';
 
 async function runSchemaMigration() {
   try {
@@ -9,30 +9,35 @@ async function runSchemaMigration() {
     const schemaPath = path.join(process.cwd(), 'schema.sql');
     const schemaSQL = await fs.readFile(schemaPath, 'utf-8');
 
-    // 2. Extract only schema-related SQL (no data manipulation)
-    const schemaSQLCleaned = schemaSQL
+    // 2. Extract only schema-related queries (CREATE TABLE, ALTER TABLE, etc.)
+    const schemaQueries = schemaSQL
       .split('\n')
-      .filter(line => !line.trim().startsWith('INSERT INTO'))
+      .filter(line => {
+        const trimmedLine = line.trim().toUpperCase();
+        return trimmedLine.startsWith('CREATE TABLE') ||
+               trimmedLine.startsWith('ALTER TABLE') ||
+               trimmedLine.startsWith('CREATE INDEX') ||
+               trimmedLine.startsWith('CREATE UNIQUE INDEX');
+      })
       .join('\n');
 
     // 3. Run the schema migration
-    await runProductionMigration(schemaSQLCleaned, 'Schema migration only');
+    await runProductionMigration(schemaQueries, 'Schema migration only');
 
     // 4. Verify the schema
     console.log('\n🔍 Verifying schema...');
     const schema = await verifyProductionSchema();
     
-    console.log('\n📋 Current Production Schema:');
-    console.log('=========================');
+    console.log('\n📊 Schema Structure:');
+    console.log('================');
     
     let currentTable = '';
-    schema.forEach(row => {
-      if (row.table_name !== currentTable) {
-        currentTable = row.table_name;
-        console.log(`\n📦 ${currentTable}`);
-        console.log('-------------------------');
+    schema.forEach(column => {
+      if (column.table_name !== currentTable) {
+        currentTable = column.table_name;
+        console.log(`\n📦 ${currentTable}:`);
       }
-      console.log(`   ${row.column_name}: ${row.data_type}`);
+      console.log(`   ${column.column_name.padEnd(30)} ${column.data_type}`);
     });
 
   } catch (error) {
