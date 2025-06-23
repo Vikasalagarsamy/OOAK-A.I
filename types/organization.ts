@@ -46,13 +46,28 @@ export interface CompanyWithEmployees extends Company {
 
 export interface Branch {
   id: number;
+  company_id: number;
+  name: string;
+  address: string;
+  phone?: string;
+  email?: string;
+  manager_id?: number;
+  is_remote: boolean;
+  created_at?: string;
+  updated_at?: string;
+  branch_code?: string;
+  location?: string;
+  company_name?: string;
+}
+
+export interface BranchFormData {
   name: string;
   company_id: number;
-  address: string | null;
-  city: string | null;
-  state: string | null;
-  country: string | null;
-  is_active: boolean;
-  created_at: string;
-  updated_at: string;
+  address: string;
+  phone?: string;
+  email?: string;
+  manager_id?: number;
+  is_remote: boolean;
+  branch_code?: string;
+  location?: string;
 } 
