@@ -15,7 +15,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { Branch, BranchFormData } from '@/types/organization';
-import { Trash2 } from 'lucide-react';
+import { Trash2, Edit } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 interface Company {
@@ -54,11 +54,11 @@ function BranchForm({ initialData, onSubmit, onCancel }: BranchFormProps) {
     return {
       name: initialData.name,
       company_id: initialData.company_id,
-      address: initialData.address,
+      address: initialData.address || '',
       phone: initialData.phone || '',
       email: initialData.email || '',
       manager_id: initialData.manager_id,
-      is_remote: initialData.is_remote,
+      is_remote: initialData.is_remote || false,
       branch_code: initialData.branch_code || '',
       location: initialData.location || '',
     };
@@ -74,7 +74,8 @@ function BranchForm({ initialData, onSubmit, onCancel }: BranchFormProps) {
         const response = await fetch('/api/organization/companies');
         if (!response.ok) throw new Error('Failed to fetch companies');
         const data = await response.json();
-        setCompanies(Array.isArray(data) ? data : []);
+        if (!data.success) throw new Error(data.error || 'Failed to fetch companies');
+        setCompanies(data.companies || []);
       } catch (error) {
         console.error('Error fetching companies:', error);
         setCompanies([]);
@@ -107,7 +108,7 @@ function BranchForm({ initialData, onSubmit, onCancel }: BranchFormProps) {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4">
+    <form onSubmit={handleSubmit} className="space-y-6">
       <div className="grid grid-cols-2 gap-4">
         <div className="space-y-2">
           <Label htmlFor="name">Branch Name *</Label>
@@ -117,6 +118,7 @@ function BranchForm({ initialData, onSubmit, onCancel }: BranchFormProps) {
             value={data.name}
             onChange={handleChange}
             required
+            className="w-full"
           />
         </div>
         <div className="space-y-2">
@@ -125,7 +127,7 @@ function BranchForm({ initialData, onSubmit, onCancel }: BranchFormProps) {
             value={data.company_id ? data.company_id.toString() : ''}
             onValueChange={handleCompanyChange}
           >
-            <SelectTrigger>
+            <SelectTrigger className="w-full">
               <SelectValue placeholder="Select a company" />
             </SelectTrigger>
             <SelectContent>
@@ -154,6 +156,7 @@ function BranchForm({ initialData, onSubmit, onCancel }: BranchFormProps) {
             name="branch_code"
             value={data.branch_code}
             onChange={handleChange}
+            className="w-full"
           />
         </div>
         <div className="space-y-2">
@@ -163,6 +166,7 @@ function BranchForm({ initialData, onSubmit, onCancel }: BranchFormProps) {
             name="location"
             value={data.location}
             onChange={handleChange}
+            className="w-full"
           />
         </div>
         <div className="space-y-2">
@@ -173,6 +177,7 @@ function BranchForm({ initialData, onSubmit, onCancel }: BranchFormProps) {
             type="tel"
             value={data.phone}
             onChange={handleChange}
+            className="w-full"
           />
         </div>
         <div className="space-y-2">
@@ -183,28 +188,8 @@ function BranchForm({ initialData, onSubmit, onCancel }: BranchFormProps) {
             type="email"
             value={data.email}
             onChange={handleChange}
+            className="w-full"
           />
-        </div>
-        <div className="space-y-2">
-          <Label htmlFor="manager_id">Manager ID</Label>
-          <Input
-            id="manager_id"
-            name="manager_id"
-            type="number"
-            value={data.manager_id || ''}
-            onChange={handleChange}
-          />
-        </div>
-        <div className="space-y-2">
-          <Label>Remote Branch</Label>
-          <div className="flex items-center space-x-2">
-            <Switch
-              id="is_remote"
-              checked={data.is_remote}
-              onCheckedChange={handleSwitchChange}
-            />
-            <Label htmlFor="is_remote">Is Remote</Label>
-          </div>
         </div>
       </div>
       <div className="space-y-2">
@@ -215,13 +200,22 @@ function BranchForm({ initialData, onSubmit, onCancel }: BranchFormProps) {
           value={data.address}
           onChange={handleChange}
           required
+          className="w-full"
         />
       </div>
-      <div className="flex justify-end space-x-2">
+      <div className="flex items-center space-x-2">
+        <Switch
+          id="is_remote"
+          checked={data.is_remote}
+          onCheckedChange={handleSwitchChange}
+        />
+        <Label htmlFor="is_remote">Remote Branch</Label>
+      </div>
+      <div className="flex justify-end space-x-2 pt-4">
         <Button type="button" variant="outline" onClick={onCancel}>
           Cancel
         </Button>
-        <Button type="submit">
+        <Button type="submit" variant="default">
           {initialData ? 'Update' : 'Add'} Branch
         </Button>
       </div>
@@ -230,28 +224,29 @@ function BranchForm({ initialData, onSubmit, onCancel }: BranchFormProps) {
 }
 
 export function BranchTable({ branches, onAddBranch, onEditBranch, onDeleteBranch }: BranchTableProps) {
-  const [addDialogOpen, setAddDialogOpen] = useState(false);
-  const [editingBranch, setEditingBranch] = useState<Branch | null>(null);
-  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
-  const [deletingBranch, setDeletingBranch] = useState<Branch | null>(null);
+  const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [selectedBranch, setSelectedBranch] = useState<Branch | null>(null);
 
   const handleAdd = async (data: BranchFormData) => {
     await onAddBranch(data);
-    setAddDialogOpen(false);
+    setIsAddDialogOpen(false);
   };
 
   const handleEdit = async (data: BranchFormData) => {
-    if (editingBranch) {
-      await onEditBranch(editingBranch.id, data);
-      setEditingBranch(null);
+    if (selectedBranch) {
+      await onEditBranch(selectedBranch.id, data);
+      setIsEditDialogOpen(false);
+      setSelectedBranch(null);
     }
   };
 
   const handleDelete = async () => {
-    if (deletingBranch) {
-      await onDeleteBranch(deletingBranch.id);
-      setDeleteDialogOpen(false);
-      setDeletingBranch(null);
+    if (selectedBranch) {
+      await onDeleteBranch(selectedBranch.id);
+      setIsDeleteDialogOpen(false);
+      setSelectedBranch(null);
     }
   };
 
@@ -259,30 +254,31 @@ export function BranchTable({ branches, onAddBranch, onEditBranch, onDeleteBranc
     <div className="space-y-4">
       <div className="flex justify-between items-center">
         <h2 className="text-2xl font-bold">Branches</h2>
-        <Dialog open={addDialogOpen} onOpenChange={setAddDialogOpen}>
+        <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
           <DialogTrigger asChild>
             <Button>Add Branch</Button>
           </DialogTrigger>
-          <DialogContent>
+          <DialogContent className="max-w-3xl">
             <DialogHeader>
               <DialogTitle>Add New Branch</DialogTitle>
             </DialogHeader>
             <BranchForm
               onSubmit={handleAdd}
-              onCancel={() => setAddDialogOpen(false)}
+              onCancel={() => setIsAddDialogOpen(false)}
             />
           </DialogContent>
         </Dialog>
       </div>
 
-      <div className="border rounded-lg">
+      <div className="rounded-md border shadow-sm">
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>Name</TableHead>
+              <TableHead>Branch Name</TableHead>
               <TableHead>Company</TableHead>
-              <TableHead>Location</TableHead>
               <TableHead>Branch Code</TableHead>
+              <TableHead>Location</TableHead>
+              <TableHead>Address</TableHead>
               <TableHead>Phone</TableHead>
               <TableHead>Email</TableHead>
               <TableHead>Remote</TableHead>
@@ -290,51 +286,55 @@ export function BranchTable({ branches, onAddBranch, onEditBranch, onDeleteBranc
             </TableRow>
           </TableHeader>
           <TableBody>
-            {branches.map((branch) => (
-              <TableRow key={branch.id}>
-                <TableCell>{branch.name}</TableCell>
-                <TableCell>{branch.company_name}</TableCell>
-                <TableCell>{branch.location}</TableCell>
-                <TableCell>{branch.branch_code}</TableCell>
-                <TableCell>{branch.phone}</TableCell>
-                <TableCell>{branch.email}</TableCell>
-                <TableCell>{branch.is_remote ? 'Yes' : 'No'}</TableCell>
-                <TableCell>
-                  <div className="flex justify-end space-x-2">
-                    <Dialog open={editingBranch?.id === branch.id} onOpenChange={(open) => {
-                      if (!open) setEditingBranch(null);
+            {branches && branches.length > 0 ? (
+              branches.map((branch) => (
+                <TableRow key={branch.id}>
+                  <TableCell className="font-medium">{branch.name}</TableCell>
+                  <TableCell>{branch.company_name}</TableCell>
+                  <TableCell>{branch.branch_code}</TableCell>
+                  <TableCell>{branch.location}</TableCell>
+                  <TableCell>{branch.address}</TableCell>
+                  <TableCell>{branch.phone}</TableCell>
+                  <TableCell>{branch.email}</TableCell>
+                  <TableCell>{branch.is_remote ? 'Yes' : 'No'}</TableCell>
+                  <TableCell className="text-right space-x-2">
+                    <Dialog open={isEditDialogOpen && selectedBranch?.id === branch.id} onOpenChange={(open) => {
+                      setIsEditDialogOpen(open);
+                      if (!open) setSelectedBranch(null);
                     }}>
                       <DialogTrigger asChild>
-                        <Button 
-                          variant="outline" 
-                          size="sm"
-                          onClick={() => setEditingBranch(branch)}
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => setSelectedBranch(branch)}
                         >
-                          Edit
+                          <Edit className="h-4 w-4" />
                         </Button>
                       </DialogTrigger>
-                      <DialogContent>
+                      <DialogContent className="max-w-3xl">
                         <DialogHeader>
                           <DialogTitle>Edit Branch</DialogTitle>
                         </DialogHeader>
                         <BranchForm
                           initialData={branch}
                           onSubmit={handleEdit}
-                          onCancel={() => setEditingBranch(null)}
+                          onCancel={() => {
+                            setIsEditDialogOpen(false);
+                            setSelectedBranch(null);
+                          }}
                         />
                       </DialogContent>
                     </Dialog>
-                    
-                    <Dialog open={deleteDialogOpen && deletingBranch?.id === branch.id} onOpenChange={setDeleteDialogOpen}>
+
+                    <Dialog open={isDeleteDialogOpen && selectedBranch?.id === branch.id} onOpenChange={(open) => {
+                      setIsDeleteDialogOpen(open);
+                      if (!open) setSelectedBranch(null);
+                    }}>
                       <DialogTrigger asChild>
                         <Button
                           variant="ghost"
-                          size="sm"
-                          className="text-red-600 hover:text-red-800 hover:bg-red-100"
-                          onClick={() => {
-                            setDeletingBranch(branch);
-                            setDeleteDialogOpen(true);
-                          }}
+                          size="icon"
+                          onClick={() => setSelectedBranch(branch)}
                         >
                           <Trash2 className="h-4 w-4" />
                         </Button>
@@ -343,33 +343,30 @@ export function BranchTable({ branches, onAddBranch, onEditBranch, onDeleteBranc
                         <DialogHeader>
                           <DialogTitle>Delete Branch</DialogTitle>
                         </DialogHeader>
-                        <div className="py-4">
-                          <p>Are you sure you want to delete {branch.name}?</p>
-                          <p className="text-sm text-gray-500 mt-1">This action cannot be undone.</p>
-                        </div>
-                        <div className="flex justify-end space-x-2">
-                          <Button
-                            variant="outline"
-                            onClick={() => {
-                              setDeleteDialogOpen(false);
-                              setDeletingBranch(null);
-                            }}
-                          >
+                        <p>Are you sure you want to delete this branch?</p>
+                        <div className="flex justify-end space-x-2 mt-4">
+                          <Button variant="outline" onClick={() => {
+                            setIsDeleteDialogOpen(false);
+                            setSelectedBranch(null);
+                          }}>
                             Cancel
                           </Button>
-                          <Button
-                            variant="destructive"
-                            onClick={handleDelete}
-                          >
+                          <Button variant="destructive" onClick={handleDelete}>
                             Delete
                           </Button>
                         </div>
                       </DialogContent>
                     </Dialog>
-                  </div>
+                  </TableCell>
+                </TableRow>
+              ))
+            ) : (
+              <TableRow>
+                <TableCell colSpan={9} className="text-center py-4">
+                  No branches found
                 </TableCell>
               </TableRow>
-            ))}
+            )}
           </TableBody>
         </Table>
       </div>

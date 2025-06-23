@@ -20,7 +20,10 @@ export default function BranchesPage() {
         throw new Error('Failed to fetch branches');
       }
       const data = await response.json();
-      setBranches(data);
+      if (!data.success) {
+        throw new Error(data.error || 'Failed to fetch branches');
+      }
+      setBranches(data.branches || []);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An error occurred');
     } finally {

@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useState } from 'react';
 import {
   Table,
   TableBody,
@@ -12,7 +12,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Company, CompanyFormData } from '@/types/organization';
-import { Trash2 } from 'lucide-react';
+import { Trash2, Edit } from 'lucide-react';
 
 interface CompanyTableProps {
   companies: Company[];
@@ -66,7 +66,7 @@ function CompanyForm({ initialData, onSubmit, onCancel }: CompanyFormProps) {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4">
+    <form onSubmit={handleSubmit} className="space-y-6">
       <div className="grid grid-cols-2 gap-4">
         <div className="space-y-2">
           <Label htmlFor="name">Company Name *</Label>
@@ -76,24 +76,7 @@ function CompanyForm({ initialData, onSubmit, onCancel }: CompanyFormProps) {
             value={data.name}
             onChange={handleChange}
             required
-          />
-        </div>
-        <div className="space-y-2">
-          <Label htmlFor="registration_number">Registration Number</Label>
-          <Input
-            id="registration_number"
-            name="registration_number"
-            value={data.registration_number}
-            onChange={handleChange}
-          />
-        </div>
-        <div className="space-y-2">
-          <Label htmlFor="tax_id">Tax ID</Label>
-          <Input
-            id="tax_id"
-            name="tax_id"
-            value={data.tax_id}
-            onChange={handleChange}
+            className="w-full"
           />
         </div>
         <div className="space-y-2">
@@ -103,6 +86,27 @@ function CompanyForm({ initialData, onSubmit, onCancel }: CompanyFormProps) {
             name="company_code"
             value={data.company_code}
             onChange={handleChange}
+            className="w-full"
+          />
+        </div>
+        <div className="space-y-2">
+          <Label htmlFor="registration_number">Registration Number</Label>
+          <Input
+            id="registration_number"
+            name="registration_number"
+            value={data.registration_number}
+            onChange={handleChange}
+            className="w-full"
+          />
+        </div>
+        <div className="space-y-2">
+          <Label htmlFor="tax_id">Tax ID</Label>
+          <Input
+            id="tax_id"
+            name="tax_id"
+            value={data.tax_id}
+            onChange={handleChange}
+            className="w-full"
           />
         </div>
         <div className="space-y-2">
@@ -113,6 +117,7 @@ function CompanyForm({ initialData, onSubmit, onCancel }: CompanyFormProps) {
             type="tel"
             value={data.phone}
             onChange={handleChange}
+            className="w-full"
           />
         </div>
         <div className="space-y-2">
@@ -123,6 +128,7 @@ function CompanyForm({ initialData, onSubmit, onCancel }: CompanyFormProps) {
             type="email"
             value={data.email}
             onChange={handleChange}
+            className="w-full"
           />
         </div>
         <div className="space-y-2">
@@ -133,6 +139,7 @@ function CompanyForm({ initialData, onSubmit, onCancel }: CompanyFormProps) {
             type="url"
             value={data.website}
             onChange={handleChange}
+            className="w-full"
           />
         </div>
         <div className="space-y-2">
@@ -143,6 +150,7 @@ function CompanyForm({ initialData, onSubmit, onCancel }: CompanyFormProps) {
             type="date"
             value={data.founded_date}
             onChange={handleChange}
+            className="w-full"
           />
         </div>
       </div>
@@ -153,13 +161,14 @@ function CompanyForm({ initialData, onSubmit, onCancel }: CompanyFormProps) {
           name="address"
           value={data.address}
           onChange={handleChange}
+          className="w-full"
         />
       </div>
-      <div className="flex justify-end space-x-2">
+      <div className="flex justify-end space-x-2 pt-4">
         <Button type="button" variant="outline" onClick={onCancel}>
           Cancel
         </Button>
-        <Button type="submit">
+        <Button type="submit" variant="default">
           {initialData ? 'Update' : 'Add'} Company
         </Button>
       </div>
@@ -195,13 +204,15 @@ export function CompanyTable({ companies, onAddCompany, onEditCompany, onDeleteC
 
   return (
     <div className="space-y-4">
-      <div className="flex justify-between items-center">
-        <h2 className="text-2xl font-bold">Companies</h2>
+      <div className="flex justify-between items-center mb-6">
+        <h2 className="text-2xl font-bold text-gray-900">Companies</h2>
         <Dialog open={addDialogOpen} onOpenChange={setAddDialogOpen}>
           <DialogTrigger asChild>
-            <Button>Add Company</Button>
+            <Button className="px-4">
+              Add Company
+            </Button>
           </DialogTrigger>
-          <DialogContent>
+          <DialogContent className="sm:max-w-[600px]">
             <DialogHeader>
               <DialogTitle>Add New Company</DialogTitle>
             </DialogHeader>
@@ -213,11 +224,12 @@ export function CompanyTable({ companies, onAddCompany, onEditCompany, onDeleteC
         </Dialog>
       </div>
 
-      <div className="border rounded-lg">
+      <div className="border rounded-lg shadow-sm">
         <Table>
           <TableHeader>
             <TableRow>
               <TableHead>Name</TableHead>
+              <TableHead>Code</TableHead>
               <TableHead>Registration No.</TableHead>
               <TableHead>Tax ID</TableHead>
               <TableHead>Phone</TableHead>
@@ -228,7 +240,8 @@ export function CompanyTable({ companies, onAddCompany, onEditCompany, onDeleteC
           <TableBody>
             {companies.map((company) => (
               <TableRow key={company.id}>
-                <TableCell>{company.name}</TableCell>
+                <TableCell className="font-medium">{company.name}</TableCell>
+                <TableCell>{company.company_code}</TableCell>
                 <TableCell>{company.registration_number}</TableCell>
                 <TableCell>{company.tax_id}</TableCell>
                 <TableCell>{company.phone}</TableCell>
@@ -242,12 +255,13 @@ export function CompanyTable({ companies, onAddCompany, onEditCompany, onDeleteC
                         <Button 
                           variant="outline" 
                           size="sm"
+                          className="h-8 w-8 p-0"
                           onClick={() => setEditingCompany(company)}
                         >
-                          Edit
+                          <Edit className="h-4 w-4" />
                         </Button>
                       </DialogTrigger>
-                      <DialogContent>
+                      <DialogContent className="sm:max-w-[600px]">
                         <DialogHeader>
                           <DialogTitle>Edit Company</DialogTitle>
                         </DialogHeader>
@@ -264,7 +278,7 @@ export function CompanyTable({ companies, onAddCompany, onEditCompany, onDeleteC
                         <Button
                           variant="ghost"
                           size="sm"
-                          className="text-red-600 hover:text-red-800 hover:bg-red-100"
+                          className="h-8 w-8 p-0 text-red-600 hover:text-red-800 hover:bg-red-100"
                           onClick={() => {
                             setDeletingCompany(company);
                             setDeleteDialogOpen(true);

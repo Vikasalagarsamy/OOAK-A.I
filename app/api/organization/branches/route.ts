@@ -7,7 +7,20 @@ export async function GET() {
 
   try {
     const result = await pool.query(`
-      SELECT b.id, b.name, b.company_id, c.name as company_name
+      SELECT 
+        b.id,
+        b.name,
+        b.company_id,
+        b.address,
+        b.phone,
+        b.email,
+        b.manager_id,
+        b.is_remote,
+        b.branch_code,
+        b.location,
+        b.created_at,
+        b.updated_at,
+        c.name as company_name
       FROM branches b
       LEFT JOIN companies c ON b.company_id = c.id
       ORDER BY b.name
@@ -66,9 +79,19 @@ export async function POST(request: Request) {
       ]
     );
 
+    // After inserting, fetch the company name for the response
+    const branchWithCompany = await pool.query(`
+      SELECT 
+        b.*,
+        c.name as company_name
+      FROM branches b
+      LEFT JOIN companies c ON b.company_id = c.id
+      WHERE b.id = $1
+    `, [result.rows[0].id]);
+
     return NextResponse.json({
       success: true,
-      branch: result.rows[0]
+      branch: branchWithCompany.rows[0]
     });
   } catch (error) {
     console.error('Error creating branch:', error);

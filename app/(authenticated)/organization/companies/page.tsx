@@ -20,7 +20,10 @@ export default function CompaniesPage() {
         throw new Error('Failed to fetch companies');
       }
       const data = await response.json();
-      setCompanies(data);
+      if (!data.success) {
+        throw new Error(data.error || 'Failed to fetch companies');
+      }
+      setCompanies(data.companies || []);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An error occurred');
     } finally {

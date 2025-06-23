@@ -8,7 +8,21 @@ export async function GET() {
 
   try {
     const result = await pool.query(
-      'SELECT id, name FROM companies ORDER BY name'
+      `SELECT 
+        id, 
+        name,
+        company_code,
+        registration_number,
+        tax_id,
+        address,
+        phone,
+        email,
+        website,
+        founded_date,
+        created_at,
+        updated_at
+      FROM companies 
+      ORDER BY name`
     )
 
     return NextResponse.json({

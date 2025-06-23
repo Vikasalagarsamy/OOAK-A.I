@@ -50,7 +50,7 @@ const getDbConfig = (): DbConfig => {
     host: process.env.POSTGRES_HOST || 'localhost',
     port: parseInt(process.env.POSTGRES_PORT || '5432'),
     database: process.env.POSTGRES_DB || 'ooak_ai_dev',
-    user: process.env.POSTGRES_USER || 'vikasalagarsamy', // Default to your username
+    user: process.env.POSTGRES_USER || 'vikasalagarsamy',
     password: process.env.POSTGRES_PASSWORD || '',
     ssl: false,
     max: 10,
