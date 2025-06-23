@@ -1,61 +1,79 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { AuthService } from '@/lib/auth';
-import { LoginCredentials, JWTPayload } from '@/types/auth';
+import { cookies } from 'next/headers';
+import db from '@/lib/db';
+import { AuthServerService } from '@/lib/auth-server';
+import { Permission } from '@/types/auth';
 
-export async function POST(request: NextRequest) {
+export async function POST(request: Request) {
   try {
-    const body: LoginCredentials = await request.json();
-    const { employee_id, password } = body;
+    const { employee_id, password } = await request.json();
 
     // Validate input
     if (!employee_id || !password) {
-      return NextResponse.json(
-        { success: false, message: 'Employee ID and password are required' },
-        { status: 400 }
-      );
+      return NextResponse.json({ 
+        success: false, 
+        message: 'Employee ID and password are required' 
+      }, { status: 400 });
     }
 
-    // Authenticate user
-    const user = await AuthService.authenticateUser(employee_id, password);
-    
-    if (!user) {
-      return NextResponse.json(
-        { success: false, message: 'Invalid employee ID or password' },
-        { status: 401 }
-      );
+    // Get employee from database
+    const result = await db.query(
+      'SELECT e.*, d.name as designation_name, d.permissions FROM employees e LEFT JOIN designations d ON e.designation_id = d.id WHERE e.employee_id = $1',
+      [employee_id]
+    );
+
+    const employee = result.rows[0];
+
+    if (!employee) {
+      return NextResponse.json({ 
+        success: false, 
+        message: 'Invalid credentials' 
+      }, { status: 401 });
     }
 
-    // Generate JWT token
-    const payload: JWTPayload = {
-      userId: user.id,
-      employee_id: user.employee_id,
-      designation_id: user.designation.id,
-    };
+    // Verify password
+    const isValid = await AuthServerService.verifyPassword(password, employee.password);
 
-    const token = AuthService.generateToken(payload);
+    if (!isValid) {
+      return NextResponse.json({ 
+        success: false, 
+        message: 'Invalid credentials' 
+      }, { status: 401 });
+    }
 
-    // Create response with user data
-    const response = NextResponse.json({
-      success: true,
-      user,
-      message: 'Login successful',
+    // Generate JWT token with only the required fields from JWTPayload type
+    const token = AuthServerService.generateToken({
+      userId: employee.id,
+      employee_id: employee.employee_id,
+      designation_id: employee.designation_id || 0
     });
 
-    // Set HTTP-only cookie
-    response.cookies.set('ooak_auth_token', token, {
+    // Set cookie
+    cookies().set('auth_token', token, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
       sameSite: 'lax',
-      maxAge: 7 * 24 * 60 * 60, // 7 days
-      path: '/',
+      maxAge: 7 * 24 * 60 * 60 // 7 days
     });
 
-    return response;
+    // Return user data
+    return NextResponse.json({
+      success: true,
+      user: {
+        id: employee.id,
+        employee_id: employee.employee_id,
+        name: employee.name,
+        designation_id: employee.designation_id,
+        designation_name: employee.designation_name,
+        permissions: employee.permissions || []
+      }
+    });
+
   } catch (error) {
     console.error('Login error:', error);
-    return NextResponse.json(
-      { success: false, message: 'Internal server error' },
-      { status: 500 }
-    );
+    return NextResponse.json({ 
+      success: false, 
+      message: 'Internal server error' 
+    }, { status: 500 });
   }
 } 

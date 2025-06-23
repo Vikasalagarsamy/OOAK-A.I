@@ -1,35 +1,6 @@
-import bcrypt from 'bcryptjs';
-import jwt from 'jsonwebtoken';
-import { AuthUser, JWTPayload, Permission, ROLE_PERMISSIONS } from '@/types/auth';
-
-const JWT_SECRET = process.env.NEXT_PUBLIC_JWT_SECRET || 'ooak-ai-super-secret-key-change-in-production';
+import { AuthUser, Permission, ROLE_PERMISSIONS } from '@/types/auth';
 
 export class AuthClientService {
-  // Hash password using bcrypt
-  static async hashPassword(password: string): Promise<string> {
-    const saltRounds = 12;
-    return bcrypt.hash(password, saltRounds);
-  }
-
-  // Verify password against hash
-  static async verifyPassword(password: string, hash: string): Promise<boolean> {
-    return bcrypt.compare(password, hash);
-  }
-
-  // Generate JWT token
-  static generateToken(payload: JWTPayload): string {
-    return jwt.sign(payload, JWT_SECRET, { expiresIn: '7d' });
-  }
-
-  // Verify JWT token
-  static verifyToken(token: string): JWTPayload | null {
-    try {
-      return jwt.verify(token, JWT_SECRET) as JWTPayload;
-    } catch (error) {
-      return null;
-    }
-  }
-
   // Get user permissions based on designation
   static getUserPermissions(designationName: string): Permission[] {
     const normalizedDesignation = designationName.toUpperCase();
