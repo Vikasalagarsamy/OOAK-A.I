@@ -35,6 +35,7 @@ type DbConfig = ProductionConfig | DevelopmentConfig;
 const getDbConfig = (): DbConfig => {
   // Use DATABASE_URL in production only
   if (process.env.NODE_ENV === 'production' && process.env.DATABASE_URL) {
+    console.log('📊 Using production database configuration');
     return {
       connectionString: process.env.DATABASE_URL,
       ssl: { rejectUnauthorized: false },
@@ -71,21 +72,21 @@ let pool: Pool | null = null;
 
 function getPool(): Pool {
   if (!pool) {
-    // Simple development configuration
-    const config = {
-      host: 'localhost',
-      port: 5432,
-      database: 'ooak_ai_dev',
-      user: process.env.USER || 'postgres', // Use system username or default to postgres
-      password: '',
-      ssl: false
-    };
-    
+    const config = getDbConfig();
     pool = new Pool(config);
     
     pool.on('error', (err: Error) => {
       console.error('Unexpected error on idle client', err);
       process.exit(-1);
+    });
+
+    // Test the connection
+    pool.query('SELECT NOW()', (err, res) => {
+      if (err) {
+        console.error('❌ Database connection test failed:', err);
+      } else {
+        console.log('✅ Database connection test successful');
+      }
     });
   }
   
