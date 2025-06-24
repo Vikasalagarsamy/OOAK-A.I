@@ -27,7 +27,7 @@ interface DevelopmentConfig {
   database: string;
   user: string;
   password: string;
-  ssl: boolean;
+  ssl: { rejectUnauthorized: boolean } | boolean;
   max: number;
   idleTimeoutMillis: number;
   connectionTimeoutMillis: number;
@@ -56,7 +56,7 @@ const getDbConfig = (): DbConfig => {
     database: process.env.POSTGRES_DB || 'ooak_ai_dev',
     user: process.env.POSTGRES_USER || 'vikasalagarsamy',
     password: process.env.POSTGRES_PASSWORD || '',
-    ssl: false,
+    ssl: process.env.POSTGRES_SSL === 'true' ? { rejectUnauthorized: false } : false,
     max: 10,
     idleTimeoutMillis: 30000,
     connectionTimeoutMillis: 10000,
