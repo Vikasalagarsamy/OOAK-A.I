@@ -52,7 +52,7 @@ export default function RoleGuard({
     return fallback || null;
   }
 
-  const userHasPermission = AuthClientService.hasPermission(user.designation_id, requiredPermission);
+  const userHasPermission = AuthClientService.hasPermission(user.designation, requiredPermission);
 
   if (!userHasPermission) {
     return fallback || (
@@ -91,13 +91,13 @@ export function usePermissions() {
 
   const checkPermission = (permission: Permission) => {
     if (!user) return false;
-    return AuthClientService.hasPermission(user.designation_id, permission);
+    return AuthClientService.hasPermission(user.designation, permission);
   };
 
   return {
     user,
     loading,
     hasPermission: checkPermission,
-    isAdmin: user ? AuthClientService.hasPermission(user.designation_id, Permission.ADMIN_FULL_ACCESS) : false,
+    isAdmin: user ? AuthClientService.hasPermission(user.designation, Permission.ADMIN_FULL_ACCESS) : false,
   };
 } 

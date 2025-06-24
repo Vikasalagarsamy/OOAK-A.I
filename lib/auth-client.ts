@@ -8,10 +8,9 @@ export class AuthClientService {
     return ROLE_PERMISSIONS[normalizedDesignation] || ROLE_PERMISSIONS['DEFAULT'];
   }
 
-  // Check if user has specific permission based on designation name
-  static hasPermission(designationId: number, requiredPermission: Permission, designationName?: string): boolean {
-    if (!designationName) return false;
-    const normalizedDesignation = designationName.toUpperCase();
+  // Check if user has specific permission based on designation
+  static hasPermission(designation: { id: number; name: string }, requiredPermission: Permission): boolean {
+    const normalizedDesignation = designation.name.toUpperCase();
     const permissions = ROLE_PERMISSIONS[normalizedDesignation] || ROLE_PERMISSIONS['DEFAULT'];
     return permissions.includes(Permission.ADMIN_FULL_ACCESS) || 
            permissions.includes(requiredPermission);
