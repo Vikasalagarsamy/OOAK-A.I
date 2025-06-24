@@ -9,7 +9,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from '@/components/ui/popover';
-import { ScrollArea } from '@/components/ui/scroll-area';
+import { ScrollArea } from '../scroll-area';
 import { useNotifications } from '@/lib/contexts/NotificationContext';
 import { cn } from '@/lib/utils';
 

@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { getDbPool } from '@/lib/db'
+import { getPool } from '@/lib/db'
 import { Pool } from 'pg'
 
 // GET /api/people/employees/[id]
@@ -7,7 +7,7 @@ export async function GET(
   request: NextRequest,
   { params }: { params: { id: string } }
 ) {
-  const pool: Pool = getDbPool()
+  const pool: Pool = getPool()
 
   try {
     const result = await pool.query(
@@ -51,7 +51,7 @@ export async function PUT(
   request: NextRequest,
   { params }: { params: { id: string } }
 ) {
-  const pool: Pool = getDbPool()
+  const pool: Pool = getPool()
 
   try {
     const body = await request.json()
@@ -68,8 +68,7 @@ export async function PUT(
     } = body
 
     const result = await pool.query(
-      `UPDATE employees
-      SET 
+      `UPDATE employees SET
         first_name = $1,
         last_name = $2,
         email = $3,
@@ -79,7 +78,7 @@ export async function PUT(
         company_id = $7,
         branch_id = $8,
         status = $9,
-        updated_at = CURRENT_TIMESTAMP
+        updated_at = NOW()
       WHERE id = $10
       RETURNING *`,
       [
@@ -121,7 +120,7 @@ export async function DELETE(
   request: NextRequest,
   { params }: { params: { id: string } }
 ) {
-  const pool: Pool = getDbPool()
+  const pool: Pool = getPool()
 
   try {
     const result = await pool.query(

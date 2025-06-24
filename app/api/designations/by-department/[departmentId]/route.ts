@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { getDbPool } from '@/lib/db'
+import { getPool } from '@/lib/db'
 import { Pool } from 'pg'
 
 // GET /api/designations/by-department/[departmentId]
@@ -7,11 +7,18 @@ export async function GET(
   request: NextRequest,
   { params }: { params: { departmentId: string } }
 ) {
-  const pool: Pool = getDbPool()
+  const pool: Pool = getPool()
 
   try {
     const result = await pool.query(
-      'SELECT id, name FROM designations WHERE department_id = $1 ORDER BY name',
+      `SELECT 
+        d.*,
+        COUNT(e.id) as employee_count
+      FROM designations d
+      LEFT JOIN employees e ON d.id = e.designation_id
+      WHERE d.department_id = $1
+      GROUP BY d.id
+      ORDER BY d.name`,
       [params.departmentId]
     )
 

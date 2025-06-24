@@ -1,34 +1,37 @@
 import { NextResponse } from 'next/server';
 import { requireAuth } from '@/lib/auth';
-import { db } from '@/lib/db';
+import db from '@/lib/db';
 
 export async function POST(
   request: Request,
   { params }: { params: { id: string } }
 ) {
   try {
-    const session = await getServerSession();
-    if (!session?.user) {
-      return new NextResponse('Unauthorized', { status: 401 });
+    const user = await requireAuth(request);
+    if (!user) {
+      return new NextResponse(JSON.stringify({ error: 'Unauthorized' }), { status: 401 });
     }
 
-    const { id } = params;
+    const notificationId = params.id;
 
-    // Mark notification as read
-    await db.query({
-      text: `
-        UPDATE notifications
-        SET is_read = true, read_at = NOW()
-        WHERE id = $1
-        AND (target_user = $2 OR recipient_id = $3)
-      `,
-      values: [id, session.user.id, session.user.employeeId],
-    });
+    const result = await db.query(
+      'UPDATE notifications SET is_read = true, read_at = NOW() WHERE id = $1 AND user_id = $2 RETURNING *',
+      [notificationId, user.id]
+    );
 
-    return new NextResponse('OK');
+    if (!result.success || !result.data || result.data.length === 0) {
+      return new NextResponse(
+        JSON.stringify({ error: 'Notification not found or unauthorized' }),
+        { status: 404 }
+      );
+    }
 
+    return new NextResponse(JSON.stringify(result.data[0]));
   } catch (error) {
-    console.error('[NOTIFICATION_READ]', error);
-    return new NextResponse('Internal Error', { status: 500 });
+    console.error('Error marking notification as read:', error);
+    return new NextResponse(
+      JSON.stringify({ error: 'Failed to mark notification as read' }),
+      { status: 500 }
+    );
   }
 } 

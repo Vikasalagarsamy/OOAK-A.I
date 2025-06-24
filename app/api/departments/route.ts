@@ -1,15 +1,21 @@
-import { NextResponse } from 'next/server'
-import { getDbPool } from '@/lib/db'
+import { NextRequest, NextResponse } from 'next/server'
+import { getPool } from '@/lib/db'
 import { Pool } from 'pg'
 
 // GET /api/departments
 export async function GET() {
-  const pool: Pool = getDbPool()
+  const pool: Pool = getPool()
 
   try {
-    const result = await pool.query(
-      'SELECT id, name, description, created_at, updated_at FROM departments ORDER BY name'
-    )
+    const result = await pool.query(`
+      SELECT 
+        d.*,
+        COUNT(e.id) as employee_count
+      FROM departments d
+      LEFT JOIN employees e ON d.id = e.department_id
+      GROUP BY d.id
+      ORDER BY d.name
+    `)
 
     return NextResponse.json({
       success: true,
@@ -25,11 +31,12 @@ export async function GET() {
 }
 
 // POST /api/departments
-export async function POST(request: Request) {
-  const pool: Pool = getDbPool()
+export async function POST(request: NextRequest) {
+  const pool: Pool = getPool()
 
   try {
-    const { name, description } = await request.json()
+    const body = await request.json()
+    const { name, description } = body
 
     // Validate required fields
     if (!name) {
@@ -40,9 +47,7 @@ export async function POST(request: Request) {
     }
 
     const result = await pool.query(
-      `INSERT INTO departments (name, description)
-       VALUES ($1, $2)
-       RETURNING id, name, description, created_at, updated_at`,
+      'INSERT INTO departments (name, description) VALUES ($1, $2) RETURNING *',
       [name, description]
     )
 

@@ -1,10 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { getDbPool } from '@/lib/db'
+import { getPool } from '@/lib/db'
 import { Pool } from 'pg'
 
 // GET /api/people/employees
 export async function GET() {
-  const pool: Pool = getDbPool()
+  const pool: Pool = getPool()
 
   try {
     const result = await pool.query(`
@@ -37,7 +37,7 @@ export async function GET() {
 
 // POST /api/people/employees
 export async function POST(request: NextRequest) {
-  const pool: Pool = getDbPool()
+  const pool: Pool = getPool()
 
   try {
     const body = await request.json()
