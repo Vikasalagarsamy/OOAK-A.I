@@ -31,9 +31,8 @@ export async function GET(request: Request) {
 
     // Check if user has permission to assign leads
     if (!AuthClientService.hasPermission(
-      session.user.designation.id, 
-      Permission.SALES_MANAGE_LEADS,
-      session.user.designation.name
+      session.user.designation,
+      Permission.SALES_MANAGE_LEADS
     )) {
       return NextResponse.json(
         { success: false, message: 'You do not have permission to assign leads' },
@@ -131,9 +130,8 @@ export async function POST(request: Request) {
 
     // Check if user has permission to assign leads
     if (!AuthClientService.hasPermission(
-      session.user.designation.id, 
-      Permission.SALES_MANAGE_LEADS,
-      session.user.designation.name
+      session.user.designation,
+      Permission.SALES_MANAGE_LEADS
     )) {
       return NextResponse.json(
         { success: false, message: 'You do not have permission to assign leads' },
