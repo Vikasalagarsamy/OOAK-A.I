@@ -22,8 +22,8 @@ interface Employee {
   status: string
   department_id: number
   designation_id: number
-  home_branch_id: number
-  primary_company_id: number
+  company_id: number
+  branch_id: number
   designation_name?: string
   department_name?: string
   branch_name?: string
@@ -215,8 +215,8 @@ export default function EmployeesPage() {
         ...formValues,
         department_id: parseInt(formValues.department_id as string),
         designation_id: parseInt(formValues.designation_id as string),
-        home_branch_id: parseInt(formValues.home_branch_id as string),
-        primary_company_id: parseInt(formValues.primary_company_id as string)
+        company_id: parseInt(formValues.company_id as string),
+        branch_id: parseInt(formValues.branch_id as string)
       }
 
       const response = await fetch('/api/people/employees', {
@@ -332,16 +332,16 @@ export default function EmployeesPage() {
                     <Input id="phone" name="phone" type="tel" required />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="primary_company_id">Company</Label>
+                    <Label htmlFor="company_id">Company</Label>
                     <Select 
-                      name="primary_company_id" 
+                      name="company_id" 
                       value={selectedCompanyId}
                       onValueChange={(value) => {
                         setSelectedCompanyId(value)
                         // Reset branch when company changes
                         const form = document.querySelector('form') as HTMLFormElement
                         if (form) {
-                          form.home_branch_id.value = ''
+                          form.branch_id.value = ''
                         }
                       }}
                       required
@@ -359,9 +359,9 @@ export default function EmployeesPage() {
                     </Select>
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="home_branch_id">Branch</Label>
+                    <Label htmlFor="branch_id">Branch</Label>
                     <Select 
-                      name="home_branch_id" 
+                      name="branch_id" 
                       required
                       disabled={!selectedCompanyId}
                     >

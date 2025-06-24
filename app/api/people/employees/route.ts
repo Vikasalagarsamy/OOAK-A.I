@@ -10,15 +10,15 @@ export async function GET() {
     const result = await pool.query(`
       SELECT 
         e.*,
-        d.name as department_name,
-        des.name as designation_name,
-        b.name as branch_name,
-        c.name as company_name
+        d.name as designation_name,
+        dp.name as department_name,
+        c.name as company_name,
+        b.name as branch_name
       FROM employees e
-      LEFT JOIN departments d ON e.department_id = d.id
-      LEFT JOIN designations des ON e.designation_id = des.id
-      LEFT JOIN branches b ON e.home_branch_id = b.id
-      LEFT JOIN companies c ON e.primary_company_id = c.id
+      LEFT JOIN designations d ON e.designation_id = d.id
+      LEFT JOIN departments dp ON e.department_id = dp.id
+      LEFT JOIN companies c ON e.company_id = c.id
+      LEFT JOIN branches b ON e.branch_id = b.id
       ORDER BY e.created_at DESC
     `)
 
@@ -49,8 +49,9 @@ export async function POST(request: NextRequest) {
       phone,
       department_id,
       designation_id,
-      home_branch_id,
-      primary_company_id
+      company_id,
+      branch_id,
+      status
     } = body
 
     const result = await pool.query(
@@ -62,8 +63,8 @@ export async function POST(request: NextRequest) {
         phone,
         department_id,
         designation_id,
-        home_branch_id,
-        primary_company_id,
+        company_id,
+        branch_id,
         status
       ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
       RETURNING *`,
@@ -75,9 +76,9 @@ export async function POST(request: NextRequest) {
         phone,
         department_id,
         designation_id,
-        home_branch_id,
-        primary_company_id,
-        'active'
+        company_id,
+        branch_id,
+        status || 'active'
       ]
     )
 

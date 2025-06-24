@@ -13,15 +13,15 @@ export async function GET(
     const result = await pool.query(
       `SELECT 
         e.*,
-        d.name as department_name,
-        des.name as designation_name,
-        b.name as branch_name,
-        c.name as company_name
+        d.name as designation_name,
+        dp.name as department_name,
+        c.name as company_name,
+        b.name as branch_name
       FROM employees e
-      LEFT JOIN departments d ON e.department_id = d.id
-      LEFT JOIN designations des ON e.designation_id = des.id
-      LEFT JOIN branches b ON e.home_branch_id = b.id
-      LEFT JOIN companies c ON e.primary_company_id = c.id
+      LEFT JOIN designations d ON e.designation_id = d.id
+      LEFT JOIN departments dp ON e.department_id = dp.id
+      LEFT JOIN companies c ON e.company_id = c.id
+      LEFT JOIN branches b ON e.branch_id = b.id
       WHERE e.id = $1`,
       [params.id]
     )
@@ -56,44 +56,41 @@ export async function PUT(
   try {
     const body = await request.json()
     const {
-      employee_id,
       first_name,
       last_name,
       email,
       phone,
       department_id,
       designation_id,
-      home_branch_id,
-      primary_company_id,
+      company_id,
+      branch_id,
       status
     } = body
 
     const result = await pool.query(
       `UPDATE employees
       SET 
-        employee_id = $1,
-        first_name = $2,
-        last_name = $3,
-        email = $4,
-        phone = $5,
-        department_id = $6,
-        designation_id = $7,
-        home_branch_id = $8,
-        primary_company_id = $9,
-        status = $10,
-        updated_at = NOW()
-      WHERE id = $11
+        first_name = $1,
+        last_name = $2,
+        email = $3,
+        phone = $4,
+        department_id = $5,
+        designation_id = $6,
+        company_id = $7,
+        branch_id = $8,
+        status = $9,
+        updated_at = CURRENT_TIMESTAMP
+      WHERE id = $10
       RETURNING *`,
       [
-        employee_id,
         first_name,
         last_name,
         email,
         phone,
         department_id,
         designation_id,
-        home_branch_id,
-        primary_company_id,
+        company_id,
+        branch_id,
         status,
         params.id
       ]

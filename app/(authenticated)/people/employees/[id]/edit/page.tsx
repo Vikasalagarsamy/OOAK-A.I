@@ -19,8 +19,8 @@ interface Employee {
   status: string
   department_id: number
   designation_id: number
-  home_branch_id: number
-  primary_company_id: number
+  company_id: number
+  branch_id: number
   designation_name?: string
   department_name?: string
   branch_name?: string
@@ -240,8 +240,8 @@ export default function EditEmployeePage({ params }: { params: { id: string } })
               <div className="space-y-2">
                 <Label htmlFor="branch">Branch</Label>
                 <Select
-                  value={employee.home_branch_id?.toString()}
-                  onValueChange={(value) => setEmployee({ ...employee, home_branch_id: parseInt(value) })}
+                  value={employee.branch_id?.toString()}
+                  onValueChange={(value) => setEmployee({ ...employee, branch_id: parseInt(value) })}
                 >
                   <SelectTrigger>
                     <SelectValue placeholder="Select branch" />
@@ -258,8 +258,8 @@ export default function EditEmployeePage({ params }: { params: { id: string } })
               <div className="space-y-2">
                 <Label htmlFor="company">Company</Label>
                 <Select
-                  value={employee.primary_company_id?.toString()}
-                  onValueChange={(value) => setEmployee({ ...employee, primary_company_id: parseInt(value) })}
+                  value={employee.company_id?.toString()}
+                  onValueChange={(value) => setEmployee({ ...employee, company_id: parseInt(value) })}
                 >
                   <SelectTrigger>
                     <SelectValue placeholder="Select company" />
