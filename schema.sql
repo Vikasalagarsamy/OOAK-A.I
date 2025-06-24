@@ -1405,6 +1405,51 @@ CREATE TABLE public.email_notification_templates (
 ALTER TABLE public.email_notification_templates OWNER TO vikasalagarsamy;
 
 --
+-- Name: employee_assignments; Type: TABLE; Schema: public; Owner: vikasalagarsamy
+--
+
+CREATE TABLE public.employee_assignments (
+    id integer NOT NULL,
+    employee_id integer,
+    company_id integer,
+    branch_id integer,
+    department_id integer,
+    designation_id integer,
+    is_primary boolean DEFAULT false,
+    start_date timestamp without time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    end_date timestamp without time zone,
+    created_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP,
+    updated_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP,
+    created_by integer,
+    updated_by integer
+);
+
+
+ALTER TABLE public.employee_assignments OWNER TO vikasalagarsamy;
+
+--
+-- Name: employee_assignments_id_seq; Type: SEQUENCE; Schema: public; Owner: vikasalagarsamy
+--
+
+CREATE SEQUENCE public.employee_assignments_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER TABLE public.employee_assignments_id_seq OWNER TO vikasalagarsamy;
+
+--
+-- Name: employee_assignments_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: vikasalagarsamy
+--
+
+ALTER SEQUENCE public.employee_assignments_id_seq OWNED BY public.employee_assignments.id;
+
+
+--
 -- Name: employee_companies; Type: TABLE; Schema: public; Owner: vikasalagarsamy
 --
 
@@ -1446,6 +1491,65 @@ ALTER TABLE public.employee_companies_id_seq OWNER TO vikasalagarsamy;
 
 ALTER SEQUENCE public.employee_companies_id_seq OWNED BY public.employee_companies.id;
 
+
+--
+-- Name: employees; Type: TABLE; Schema: public; Owner: vikasalagarsamy
+--
+
+CREATE TABLE public.employees (
+    id integer NOT NULL,
+    employee_id character varying(20) NOT NULL,
+    first_name character varying(100) NOT NULL,
+    last_name character varying(100) NOT NULL,
+    email character varying(255),
+    phone character varying(20),
+    address text,
+    city character varying(100),
+    state character varying(100),
+    zip_code character varying(20),
+    country character varying(100),
+    hire_date date,
+    termination_date date,
+    status character varying(20) DEFAULT 'active'::character varying,
+    department_id integer,
+    designation_id integer,
+    job_title character varying(100),
+    created_at timestamp with time zone DEFAULT now(),
+    updated_at timestamp with time zone DEFAULT now(),
+    name character varying(255),
+    username character varying(255),
+    password_hash text,
+    role_id integer,
+    last_login timestamp without time zone,
+    is_active boolean DEFAULT true,
+    company_id integer,
+    branch_id integer
+);
+
+
+ALTER TABLE public.employees OWNER TO vikasalagarsamy;
+
+--
+-- Name: employee_company_assignments_v; Type: VIEW; Schema: public; Owner: vikasalagarsamy
+--
+
+CREATE VIEW public.employee_company_assignments_v AS
+ SELECT e.id,
+    e.employee_id,
+    e.first_name,
+    e.last_name,
+    e.company_id,
+    c.name AS company_name,
+    e.branch_id,
+    b.name AS branch_name,
+    e.created_at,
+    e.updated_at
+   FROM ((public.employees e
+     LEFT JOIN public.companies c ON ((e.company_id = c.id)))
+     LEFT JOIN public.branches b ON ((e.branch_id = b.id)));
+
+
+ALTER TABLE public.employee_company_assignments_v OWNER TO vikasalagarsamy;
 
 --
 -- Name: employee_devices; Type: TABLE; Schema: public; Owner: vikasalagarsamy
@@ -1490,41 +1594,22 @@ ALTER SEQUENCE public.employee_devices_id_seq OWNED BY public.employee_devices.i
 
 
 --
--- Name: employees; Type: TABLE; Schema: public; Owner: vikasalagarsamy
+-- Name: employees_column_backup; Type: TABLE; Schema: public; Owner: vikasalagarsamy
 --
 
-CREATE TABLE public.employees (
-    id integer NOT NULL,
-    employee_id character varying(20) NOT NULL,
-    first_name character varying(100) NOT NULL,
-    last_name character varying(100) NOT NULL,
-    email character varying(255),
-    phone character varying(20),
-    address text,
-    city character varying(100),
-    state character varying(100),
-    zip_code character varying(20),
-    country character varying(100),
-    hire_date date,
-    termination_date date,
-    status character varying(20) DEFAULT 'active'::character varying,
-    department_id integer,
-    designation_id integer,
-    job_title character varying(100),
-    home_branch_id integer,
+CREATE TABLE public.employees_column_backup (
+    id integer,
+    employee_id character varying(20),
     primary_company_id integer,
-    created_at timestamp with time zone DEFAULT now(),
-    updated_at timestamp with time zone DEFAULT now(),
-    name character varying(255),
-    username character varying(255),
-    password_hash text,
-    role_id integer,
-    last_login timestamp without time zone,
-    is_active boolean DEFAULT true
+    home_branch_id integer,
+    company_id integer,
+    branch_id integer,
+    created_at timestamp with time zone,
+    updated_at timestamp with time zone
 );
 
 
-ALTER TABLE public.employees OWNER TO vikasalagarsamy;
+ALTER TABLE public.employees_column_backup OWNER TO vikasalagarsamy;
 
 --
 -- Name: employees_id_seq; Type: SEQUENCE; Schema: public; Owner: vikasalagarsamy
@@ -2072,7 +2157,8 @@ CREATE TABLE public.leads (
     venue_preference text,
     guest_count integer,
     description text,
-    rejection_date timestamp without time zone
+    rejection_date timestamp without time zone,
+    assigned_at timestamp with time zone
 );
 
 
@@ -3660,6 +3746,42 @@ ALTER SEQUENCE public.sales_team_members_id_seq OWNED BY public.sales_team_membe
 
 
 --
+-- Name: schema_changes_log; Type: TABLE; Schema: public; Owner: vikasalagarsamy
+--
+
+CREATE TABLE public.schema_changes_log (
+    id integer NOT NULL,
+    change_description text,
+    executed_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP,
+    backup_table_name text
+);
+
+
+ALTER TABLE public.schema_changes_log OWNER TO vikasalagarsamy;
+
+--
+-- Name: schema_changes_log_id_seq; Type: SEQUENCE; Schema: public; Owner: vikasalagarsamy
+--
+
+CREATE SEQUENCE public.schema_changes_log_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER TABLE public.schema_changes_log_id_seq OWNER TO vikasalagarsamy;
+
+--
+-- Name: schema_changes_log_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: vikasalagarsamy
+--
+
+ALTER SEQUENCE public.schema_changes_log_id_seq OWNED BY public.schema_changes_log.id;
+
+
+--
 -- Name: sequence_rules; Type: TABLE; Schema: public; Owner: vikasalagarsamy
 --
 
@@ -4728,6 +4850,13 @@ ALTER TABLE ONLY public.dynamic_menus ALTER COLUMN id SET DEFAULT nextval('publi
 
 
 --
+-- Name: employee_assignments id; Type: DEFAULT; Schema: public; Owner: vikasalagarsamy
+--
+
+ALTER TABLE ONLY public.employee_assignments ALTER COLUMN id SET DEFAULT nextval('public.employee_assignments_id_seq'::regclass);
+
+
+--
 -- Name: employee_companies id; Type: DEFAULT; Schema: public; Owner: vikasalagarsamy
 --
 
@@ -5050,6 +5179,13 @@ ALTER TABLE ONLY public.sales_team_members ALTER COLUMN id SET DEFAULT nextval('
 
 
 --
+-- Name: schema_changes_log id; Type: DEFAULT; Schema: public; Owner: vikasalagarsamy
+--
+
+ALTER TABLE ONLY public.schema_changes_log ALTER COLUMN id SET DEFAULT nextval('public.schema_changes_log_id_seq'::regclass);
+
+
+--
 -- Name: sequence_rules id; Type: DEFAULT; Schema: public; Owner: vikasalagarsamy
 --
 
@@ -5169,6 +5305,30 @@ ALTER TABLE ONLY public.whatsapp_messages ALTER COLUMN id SET DEFAULT nextval('p
 
 
 --
+-- Name: branches branches_pkey; Type: CONSTRAINT; Schema: public; Owner: vikasalagarsamy
+--
+
+ALTER TABLE ONLY public.branches
+    ADD CONSTRAINT branches_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: companies companies_pkey; Type: CONSTRAINT; Schema: public; Owner: vikasalagarsamy
+--
+
+ALTER TABLE ONLY public.companies
+    ADD CONSTRAINT companies_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: departments departments_pkey; Type: CONSTRAINT; Schema: public; Owner: vikasalagarsamy
+--
+
+ALTER TABLE ONLY public.departments
+    ADD CONSTRAINT departments_pkey PRIMARY KEY (id);
+
+
+--
 -- Name: designation_menu_permissions designation_menu_permissions_designation_id_menu_item_id_key; Type: CONSTRAINT; Schema: public; Owner: vikasalagarsamy
 --
 
@@ -5193,6 +5353,14 @@ ALTER TABLE ONLY public.designations
 
 
 --
+-- Name: employee_assignments employee_assignments_pkey; Type: CONSTRAINT; Schema: public; Owner: vikasalagarsamy
+--
+
+ALTER TABLE ONLY public.employee_assignments
+    ADD CONSTRAINT employee_assignments_pkey PRIMARY KEY (id);
+
+
+--
 -- Name: employees employees_employee_id_key; Type: CONSTRAINT; Schema: public; Owner: vikasalagarsamy
 --
 
@@ -5214,6 +5382,14 @@ ALTER TABLE ONLY public.employees
 
 ALTER TABLE ONLY public.menu_items
     ADD CONSTRAINT menu_items_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: schema_changes_log schema_changes_log_pkey; Type: CONSTRAINT; Schema: public; Owner: vikasalagarsamy
+--
+
+ALTER TABLE ONLY public.schema_changes_log
+    ADD CONSTRAINT schema_changes_log_pkey PRIMARY KEY (id);
 
 
 --
@@ -5254,6 +5430,78 @@ ALTER TABLE ONLY public.designation_menu_permissions
 
 ALTER TABLE ONLY public.designation_menu_permissions
     ADD CONSTRAINT designation_menu_permissions_updated_by_fkey FOREIGN KEY (updated_by) REFERENCES public.employees(employee_id);
+
+
+--
+-- Name: employee_assignments fk_assignments_branch; Type: FK CONSTRAINT; Schema: public; Owner: vikasalagarsamy
+--
+
+ALTER TABLE ONLY public.employee_assignments
+    ADD CONSTRAINT fk_assignments_branch FOREIGN KEY (branch_id) REFERENCES public.branches(id);
+
+
+--
+-- Name: employee_assignments fk_assignments_company; Type: FK CONSTRAINT; Schema: public; Owner: vikasalagarsamy
+--
+
+ALTER TABLE ONLY public.employee_assignments
+    ADD CONSTRAINT fk_assignments_company FOREIGN KEY (company_id) REFERENCES public.companies(id);
+
+
+--
+-- Name: employee_assignments fk_assignments_created_by; Type: FK CONSTRAINT; Schema: public; Owner: vikasalagarsamy
+--
+
+ALTER TABLE ONLY public.employee_assignments
+    ADD CONSTRAINT fk_assignments_created_by FOREIGN KEY (created_by) REFERENCES public.employees(id);
+
+
+--
+-- Name: employee_assignments fk_assignments_department; Type: FK CONSTRAINT; Schema: public; Owner: vikasalagarsamy
+--
+
+ALTER TABLE ONLY public.employee_assignments
+    ADD CONSTRAINT fk_assignments_department FOREIGN KEY (department_id) REFERENCES public.departments(id);
+
+
+--
+-- Name: employee_assignments fk_assignments_designation; Type: FK CONSTRAINT; Schema: public; Owner: vikasalagarsamy
+--
+
+ALTER TABLE ONLY public.employee_assignments
+    ADD CONSTRAINT fk_assignments_designation FOREIGN KEY (designation_id) REFERENCES public.designations(id);
+
+
+--
+-- Name: employee_assignments fk_assignments_employee; Type: FK CONSTRAINT; Schema: public; Owner: vikasalagarsamy
+--
+
+ALTER TABLE ONLY public.employee_assignments
+    ADD CONSTRAINT fk_assignments_employee FOREIGN KEY (employee_id) REFERENCES public.employees(id);
+
+
+--
+-- Name: employee_assignments fk_assignments_updated_by; Type: FK CONSTRAINT; Schema: public; Owner: vikasalagarsamy
+--
+
+ALTER TABLE ONLY public.employee_assignments
+    ADD CONSTRAINT fk_assignments_updated_by FOREIGN KEY (updated_by) REFERENCES public.employees(id);
+
+
+--
+-- Name: employees fk_employees_branch; Type: FK CONSTRAINT; Schema: public; Owner: vikasalagarsamy
+--
+
+ALTER TABLE ONLY public.employees
+    ADD CONSTRAINT fk_employees_branch FOREIGN KEY (branch_id) REFERENCES public.branches(id);
+
+
+--
+-- Name: employees fk_employees_company; Type: FK CONSTRAINT; Schema: public; Owner: vikasalagarsamy
+--
+
+ALTER TABLE ONLY public.employees
+    ADD CONSTRAINT fk_employees_company FOREIGN KEY (company_id) REFERENCES public.companies(id);
 
 
 --
