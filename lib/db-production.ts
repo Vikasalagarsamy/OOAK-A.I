@@ -16,9 +16,21 @@ const PRODUCTION_DATABASE_URL = 'postgresql://ooak_admin:mSglqEawN72hkoEj8tSNF5q
 const productionPool = new Pool({
   connectionString: PRODUCTION_DATABASE_URL,
   ssl: { rejectUnauthorized: false },
-  max: 5,
-  idleTimeoutMillis: 30000,
-  connectionTimeoutMillis: 10000,
+  max: 20,
+  min: 5,
+  idleTimeoutMillis: 60000,
+  connectionTimeoutMillis: 30000,
+  statement_timeout: 60000,
+  query_timeout: 60000,
+});
+
+// Add event listeners for pool errors
+productionPool.on('error', (err) => {
+  console.error('Unexpected error on idle client', err);
+});
+
+productionPool.on('connect', () => {
+  console.log('New client connected to the pool');
 });
 
 // Helper function to get a production client
