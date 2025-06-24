@@ -1,4 +1,8 @@
 import { Pool, PoolClient, QueryResult } from 'pg';
+import { types } from 'pg';
+
+// Configure pg to return dates as strings in YYYY-MM-DD format
+types.setTypeParser(1082, (value: string) => value); // Type 1082 is DATE
 
 // Define PostgreSQL error type
 interface PostgresError extends Error {
