@@ -1,0 +1,13 @@
+[
+  {
+    "row": {
+      "id": 35,
+      "name": "QUALITY ANALYST",
+      "department_id": 21,
+      "description": "QUALITY ANALYST",
+      "created_at": "2025-06-13T07:56:49.790Z",
+      "updated_at": "2025-06-13T07:56:49.790Z"
+    },
+    "error": "duplicate key value violates unique constraint \"designations_name_key\""
+  }
+]

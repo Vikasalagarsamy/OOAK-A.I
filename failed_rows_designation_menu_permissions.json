@@ -1,0 +1,1042 @@
+[
+  {
+    "row": {
+      "id": 1335,
+      "designation_id": 4,
+      "menu_item_id": 3,
+      "can_view": true,
+      "created_at": "2025-06-23T10:22:18.216Z",
+      "updated_at": "2025-06-23T10:22:18.216Z",
+      "created_by": "EMP-25-0001",
+      "updated_by": "EMP-25-0001"
+    },
+    "error": "Foreign key violation: designation_id=4 not found in designations"
+  },
+  {
+    "row": {
+      "id": 1334,
+      "designation_id": 4,
+      "menu_item_id": 1,
+      "can_view": true,
+      "created_at": "2025-06-23T10:22:18.216Z",
+      "updated_at": "2025-06-23T10:22:18.216Z",
+      "created_by": "EMP-25-0001",
+      "updated_by": "EMP-25-0001"
+    },
+    "error": "Foreign key violation: designation_id=4 not found in designations"
+  },
+  {
+    "row": {
+      "id": 1337,
+      "designation_id": 4,
+      "menu_item_id": 2,
+      "can_view": false,
+      "created_at": "2025-06-23T10:22:18.216Z",
+      "updated_at": "2025-06-23T10:22:18.216Z",
+      "created_by": "EMP-25-0001",
+      "updated_by": "EMP-25-0001"
+    },
+    "error": "Foreign key violation: designation_id=4 not found in designations"
+  },
+  {
+    "row": {
+      "id": 1339,
+      "designation_id": 4,
+      "menu_item_id": 5,
+      "can_view": true,
+      "created_at": "2025-06-23T10:22:18.216Z",
+      "updated_at": "2025-06-23T10:22:18.216Z",
+      "created_by": "EMP-25-0001",
+      "updated_by": "EMP-25-0001"
+    },
+    "error": "Foreign key violation: designation_id=4 not found in designations"
+  },
+  {
+    "row": {
+      "id": 1341,
+      "designation_id": 4,
+      "menu_item_id": 6,
+      "can_view": true,
+      "created_at": "2025-06-23T10:22:18.216Z",
+      "updated_at": "2025-06-23T10:22:18.216Z",
+      "created_by": "EMP-25-0001",
+      "updated_by": "EMP-25-0001"
+    },
+    "error": "Foreign key violation: designation_id=4 not found in designations"
+  },
+  {
+    "row": {
+      "id": 1343,
+      "designation_id": 4,
+      "menu_item_id": 7,
+      "can_view": true,
+      "created_at": "2025-06-23T10:22:18.216Z",
+      "updated_at": "2025-06-23T10:22:18.216Z",
+      "created_by": "EMP-25-0001",
+      "updated_by": "EMP-25-0001"
+    },
+    "error": "Foreign key violation: designation_id=4 not found in designations"
+  },
+  {
+    "row": {
+      "id": 1345,
+      "designation_id": 4,
+      "menu_item_id": 8,
+      "can_view": true,
+      "created_at": "2025-06-23T10:22:18.216Z",
+      "updated_at": "2025-06-23T10:22:18.216Z",
+      "created_by": "EMP-25-0001",
+      "updated_by": "EMP-25-0001"
+    },
+    "error": "Foreign key violation: designation_id=4 not found in designations"
+  },
+  {
+    "row": {
+      "id": 1347,
+      "designation_id": 4,
+      "menu_item_id": 9,
+      "can_view": true,
+      "created_at": "2025-06-23T10:22:18.216Z",
+      "updated_at": "2025-06-23T10:22:18.216Z",
+      "created_by": "EMP-25-0001",
+      "updated_by": "EMP-25-0001"
+    },
+    "error": "Foreign key violation: designation_id=4 not found in designations"
+  },
+  {
+    "row": {
+      "id": 1349,
+      "designation_id": 4,
+      "menu_item_id": 10,
+      "can_view": true,
+      "created_at": "2025-06-23T10:22:18.216Z",
+      "updated_at": "2025-06-23T10:22:18.216Z",
+      "created_by": "EMP-25-0001",
+      "updated_by": "EMP-25-0001"
+    },
+    "error": "Foreign key violation: designation_id=4 not found in designations"
+  },
+  {
+    "row": {
+      "id": 1073,
+      "designation_id": 3,
+      "menu_item_id": 79,
+      "can_view": false,
+      "created_at": "2025-06-23T05:21:10.944Z",
+      "updated_at": "2025-06-23T05:21:10.944Z",
+      "created_by": "EMP-25-0001",
+      "updated_by": "EMP-25-0001"
+    },
+    "error": "Foreign key violation: menu_item_id=79 not found in menu_items"
+  },
+  {
+    "row": {
+      "id": 1074,
+      "designation_id": 3,
+      "menu_item_id": 80,
+      "can_view": false,
+      "created_at": "2025-06-23T05:21:10.944Z",
+      "updated_at": "2025-06-23T05:21:10.944Z",
+      "created_by": "EMP-25-0001",
+      "updated_by": "EMP-25-0001"
+    },
+    "error": "Foreign key violation: menu_item_id=80 not found in menu_items"
+  },
+  {
+    "row": {
+      "id": 1351,
+      "designation_id": 4,
+      "menu_item_id": 11,
+      "can_view": true,
+      "created_at": "2025-06-23T10:22:18.216Z",
+      "updated_at": "2025-06-23T10:22:18.216Z",
+      "created_by": "EMP-25-0001",
+      "updated_by": "EMP-25-0001"
+    },
+    "error": "Foreign key violation: designation_id=4 not found in designations"
+  },
+  {
+    "row": {
+      "id": 1353,
+      "designation_id": 4,
+      "menu_item_id": 12,
+      "can_view": true,
+      "created_at": "2025-06-23T10:22:18.216Z",
+      "updated_at": "2025-06-23T10:22:18.216Z",
+      "created_by": "EMP-25-0001",
+      "updated_by": "EMP-25-0001"
+    },
+    "error": "Foreign key violation: designation_id=4 not found in designations"
+  },
+  {
+    "row": {
+      "id": 1355,
+      "designation_id": 4,
+      "menu_item_id": 13,
+      "can_view": true,
+      "created_at": "2025-06-23T10:22:18.216Z",
+      "updated_at": "2025-06-23T10:22:18.216Z",
+      "created_by": "EMP-25-0001",
+      "updated_by": "EMP-25-0001"
+    },
+    "error": "Foreign key violation: designation_id=4 not found in designations"
+  },
+  {
+    "row": {
+      "id": 1357,
+      "designation_id": 4,
+      "menu_item_id": 14,
+      "can_view": true,
+      "created_at": "2025-06-23T10:22:18.216Z",
+      "updated_at": "2025-06-23T10:22:18.216Z",
+      "created_by": "EMP-25-0001",
+      "updated_by": "EMP-25-0001"
+    },
+    "error": "Foreign key violation: designation_id=4 not found in designations"
+  },
+  {
+    "row": {
+      "id": 1359,
+      "designation_id": 4,
+      "menu_item_id": 15,
+      "can_view": true,
+      "created_at": "2025-06-23T10:22:18.216Z",
+      "updated_at": "2025-06-23T10:22:18.216Z",
+      "created_by": "EMP-25-0001",
+      "updated_by": "EMP-25-0001"
+    },
+    "error": "Foreign key violation: designation_id=4 not found in designations"
+  },
+  {
+    "row": {
+      "id": 1361,
+      "designation_id": 4,
+      "menu_item_id": 18,
+      "can_view": true,
+      "created_at": "2025-06-23T10:22:18.216Z",
+      "updated_at": "2025-06-23T10:22:18.216Z",
+      "created_by": "EMP-25-0001",
+      "updated_by": "EMP-25-0001"
+    },
+    "error": "Foreign key violation: designation_id=4 not found in designations"
+  },
+  {
+    "row": {
+      "id": 1363,
+      "designation_id": 4,
+      "menu_item_id": 19,
+      "can_view": true,
+      "created_at": "2025-06-23T10:22:18.216Z",
+      "updated_at": "2025-06-23T10:22:18.216Z",
+      "created_by": "EMP-25-0001",
+      "updated_by": "EMP-25-0001"
+    },
+    "error": "Foreign key violation: designation_id=4 not found in designations"
+  },
+  {
+    "row": {
+      "id": 1365,
+      "designation_id": 4,
+      "menu_item_id": 20,
+      "can_view": true,
+      "created_at": "2025-06-23T10:22:18.216Z",
+      "updated_at": "2025-06-23T10:22:18.216Z",
+      "created_by": "EMP-25-0001",
+      "updated_by": "EMP-25-0001"
+    },
+    "error": "Foreign key violation: designation_id=4 not found in designations"
+  },
+  {
+    "row": {
+      "id": 1367,
+      "designation_id": 4,
+      "menu_item_id": 21,
+      "can_view": true,
+      "created_at": "2025-06-23T10:22:18.216Z",
+      "updated_at": "2025-06-23T10:22:18.216Z",
+      "created_by": "EMP-25-0001",
+      "updated_by": "EMP-25-0001"
+    },
+    "error": "Foreign key violation: designation_id=4 not found in designations"
+  },
+  {
+    "row": {
+      "id": 1338,
+      "designation_id": 4,
+      "menu_item_id": 4,
+      "can_view": true,
+      "created_at": "2025-06-23T10:22:18.216Z",
+      "updated_at": "2025-06-23T10:22:18.216Z",
+      "created_by": "EMP-25-0001",
+      "updated_by": "EMP-25-0001"
+    },
+    "error": "Foreign key violation: designation_id=4 not found in designations"
+  },
+  {
+    "row": {
+      "id": 1370,
+      "designation_id": 4,
+      "menu_item_id": 23,
+      "can_view": true,
+      "created_at": "2025-06-23T10:22:18.216Z",
+      "updated_at": "2025-06-23T10:22:18.216Z",
+      "created_by": "EMP-25-0001",
+      "updated_by": "EMP-25-0001"
+    },
+    "error": "Foreign key violation: designation_id=4 not found in designations"
+  },
+  {
+    "row": {
+      "id": 1372,
+      "designation_id": 4,
+      "menu_item_id": 24,
+      "can_view": true,
+      "created_at": "2025-06-23T10:22:18.216Z",
+      "updated_at": "2025-06-23T10:22:18.216Z",
+      "created_by": "EMP-25-0001",
+      "updated_by": "EMP-25-0001"
+    },
+    "error": "Foreign key violation: designation_id=4 not found in designations"
+  },
+  {
+    "row": {
+      "id": 1374,
+      "designation_id": 4,
+      "menu_item_id": 25,
+      "can_view": true,
+      "created_at": "2025-06-23T10:22:18.216Z",
+      "updated_at": "2025-06-23T10:22:18.216Z",
+      "created_by": "EMP-25-0001",
+      "updated_by": "EMP-25-0001"
+    },
+    "error": "Foreign key violation: designation_id=4 not found in designations"
+  },
+  {
+    "row": {
+      "id": 1376,
+      "designation_id": 4,
+      "menu_item_id": 26,
+      "can_view": true,
+      "created_at": "2025-06-23T10:22:18.216Z",
+      "updated_at": "2025-06-23T10:22:18.216Z",
+      "created_by": "EMP-25-0001",
+      "updated_by": "EMP-25-0001"
+    },
+    "error": "Foreign key violation: designation_id=4 not found in designations"
+  },
+  {
+    "row": {
+      "id": 1378,
+      "designation_id": 4,
+      "menu_item_id": 27,
+      "can_view": true,
+      "created_at": "2025-06-23T10:22:18.216Z",
+      "updated_at": "2025-06-23T10:22:18.216Z",
+      "created_by": "EMP-25-0001",
+      "updated_by": "EMP-25-0001"
+    },
+    "error": "Foreign key violation: designation_id=4 not found in designations"
+  },
+  {
+    "row": {
+      "id": 1369,
+      "designation_id": 4,
+      "menu_item_id": 22,
+      "can_view": true,
+      "created_at": "2025-06-23T10:22:18.216Z",
+      "updated_at": "2025-06-23T10:22:18.216Z",
+      "created_by": "EMP-25-0001",
+      "updated_by": "EMP-25-0001"
+    },
+    "error": "Foreign key violation: designation_id=4 not found in designations"
+  },
+  {
+    "row": {
+      "id": 1380,
+      "designation_id": 4,
+      "menu_item_id": 28,
+      "can_view": false,
+      "created_at": "2025-06-23T10:22:18.216Z",
+      "updated_at": "2025-06-23T10:22:18.216Z",
+      "created_by": "EMP-25-0001",
+      "updated_by": "EMP-25-0001"
+    },
+    "error": "Foreign key violation: designation_id=4 not found in designations"
+  },
+  {
+    "row": {
+      "id": 1381,
+      "designation_id": 4,
+      "menu_item_id": 29,
+      "can_view": false,
+      "created_at": "2025-06-23T10:22:18.216Z",
+      "updated_at": "2025-06-23T10:22:18.216Z",
+      "created_by": "EMP-25-0001",
+      "updated_by": "EMP-25-0001"
+    },
+    "error": "Foreign key violation: designation_id=4 not found in designations"
+  },
+  {
+    "row": {
+      "id": 1382,
+      "designation_id": 4,
+      "menu_item_id": 30,
+      "can_view": false,
+      "created_at": "2025-06-23T10:22:18.216Z",
+      "updated_at": "2025-06-23T10:22:18.216Z",
+      "created_by": "EMP-25-0001",
+      "updated_by": "EMP-25-0001"
+    },
+    "error": "Foreign key violation: designation_id=4 not found in designations"
+  },
+  {
+    "row": {
+      "id": 1383,
+      "designation_id": 4,
+      "menu_item_id": 31,
+      "can_view": false,
+      "created_at": "2025-06-23T10:22:18.216Z",
+      "updated_at": "2025-06-23T10:22:18.216Z",
+      "created_by": "EMP-25-0001",
+      "updated_by": "EMP-25-0001"
+    },
+    "error": "Foreign key violation: designation_id=4 not found in designations"
+  },
+  {
+    "row": {
+      "id": 1385,
+      "designation_id": 4,
+      "menu_item_id": 33,
+      "can_view": true,
+      "created_at": "2025-06-23T10:22:18.216Z",
+      "updated_at": "2025-06-23T10:22:18.216Z",
+      "created_by": "EMP-25-0001",
+      "updated_by": "EMP-25-0001"
+    },
+    "error": "Foreign key violation: designation_id=4 not found in designations"
+  },
+  {
+    "row": {
+      "id": 1387,
+      "designation_id": 4,
+      "menu_item_id": 34,
+      "can_view": true,
+      "created_at": "2025-06-23T10:22:18.216Z",
+      "updated_at": "2025-06-23T10:22:18.216Z",
+      "created_by": "EMP-25-0001",
+      "updated_by": "EMP-25-0001"
+    },
+    "error": "Foreign key violation: designation_id=4 not found in designations"
+  },
+  {
+    "row": {
+      "id": 1389,
+      "designation_id": 4,
+      "menu_item_id": 35,
+      "can_view": true,
+      "created_at": "2025-06-23T10:22:18.216Z",
+      "updated_at": "2025-06-23T10:22:18.216Z",
+      "created_by": "EMP-25-0001",
+      "updated_by": "EMP-25-0001"
+    },
+    "error": "Foreign key violation: designation_id=4 not found in designations"
+  },
+  {
+    "row": {
+      "id": 1391,
+      "designation_id": 4,
+      "menu_item_id": 36,
+      "can_view": true,
+      "created_at": "2025-06-23T10:22:18.216Z",
+      "updated_at": "2025-06-23T10:22:18.216Z",
+      "created_by": "EMP-25-0001",
+      "updated_by": "EMP-25-0001"
+    },
+    "error": "Foreign key violation: designation_id=4 not found in designations"
+  },
+  {
+    "row": {
+      "id": 1384,
+      "designation_id": 4,
+      "menu_item_id": 32,
+      "can_view": true,
+      "created_at": "2025-06-23T10:22:18.216Z",
+      "updated_at": "2025-06-23T10:22:18.216Z",
+      "created_by": "EMP-25-0001",
+      "updated_by": "EMP-25-0001"
+    },
+    "error": "Foreign key violation: designation_id=4 not found in designations"
+  },
+  {
+    "row": {
+      "id": 1394,
+      "designation_id": 4,
+      "menu_item_id": 38,
+      "can_view": true,
+      "created_at": "2025-06-23T10:22:18.216Z",
+      "updated_at": "2025-06-23T10:22:18.216Z",
+      "created_by": "EMP-25-0001",
+      "updated_by": "EMP-25-0001"
+    },
+    "error": "Foreign key violation: designation_id=4 not found in designations"
+  },
+  {
+    "row": {
+      "id": 1396,
+      "designation_id": 4,
+      "menu_item_id": 39,
+      "can_view": true,
+      "created_at": "2025-06-23T10:22:18.216Z",
+      "updated_at": "2025-06-23T10:22:18.216Z",
+      "created_by": "EMP-25-0001",
+      "updated_by": "EMP-25-0001"
+    },
+    "error": "Foreign key violation: designation_id=4 not found in designations"
+  },
+  {
+    "row": {
+      "id": 1398,
+      "designation_id": 4,
+      "menu_item_id": 40,
+      "can_view": true,
+      "created_at": "2025-06-23T10:22:18.216Z",
+      "updated_at": "2025-06-23T10:22:18.216Z",
+      "created_by": "EMP-25-0001",
+      "updated_by": "EMP-25-0001"
+    },
+    "error": "Foreign key violation: designation_id=4 not found in designations"
+  },
+  {
+    "row": {
+      "id": 1400,
+      "designation_id": 4,
+      "menu_item_id": 41,
+      "can_view": true,
+      "created_at": "2025-06-23T10:22:18.216Z",
+      "updated_at": "2025-06-23T10:22:18.216Z",
+      "created_by": "EMP-25-0001",
+      "updated_by": "EMP-25-0001"
+    },
+    "error": "Foreign key violation: designation_id=4 not found in designations"
+  },
+  {
+    "row": {
+      "id": 1402,
+      "designation_id": 4,
+      "menu_item_id": 42,
+      "can_view": true,
+      "created_at": "2025-06-23T10:22:18.216Z",
+      "updated_at": "2025-06-23T10:22:18.216Z",
+      "created_by": "EMP-25-0001",
+      "updated_by": "EMP-25-0001"
+    },
+    "error": "Foreign key violation: designation_id=4 not found in designations"
+  },
+  {
+    "row": {
+      "id": 276,
+      "designation_id": 34,
+      "menu_item_id": 62,
+      "can_view": true,
+      "created_at": "2025-06-22T12:22:33.695Z",
+      "updated_at": "2025-06-22T12:22:33.695Z",
+      "created_by": "EMP-25-0001",
+      "updated_by": "EMP-25-0001"
+    },
+    "error": "insert or update on table \"designation_menu_permissions\" violates foreign key constraint \"designation_menu_permissions_menu_item_id_fkey\""
+  },
+  {
+    "row": {
+      "id": 278,
+      "designation_id": 34,
+      "menu_item_id": 63,
+      "can_view": true,
+      "created_at": "2025-06-22T12:22:33.695Z",
+      "updated_at": "2025-06-22T12:22:33.695Z",
+      "created_by": "EMP-25-0001",
+      "updated_by": "EMP-25-0001"
+    },
+    "error": "Foreign key violation: menu_item_id=63 not found in menu_items"
+  },
+  {
+    "row": {
+      "id": 271,
+      "designation_id": 34,
+      "menu_item_id": 59,
+      "can_view": true,
+      "created_at": "2025-06-22T12:22:33.695Z",
+      "updated_at": "2025-06-22T12:22:33.695Z",
+      "created_by": "EMP-25-0001",
+      "updated_by": "EMP-25-0001"
+    },
+    "error": "Foreign key violation: menu_item_id=59 not found in menu_items"
+  },
+  {
+    "row": {
+      "id": 281,
+      "designation_id": 34,
+      "menu_item_id": 69,
+      "can_view": true,
+      "created_at": "2025-06-22T12:22:33.695Z",
+      "updated_at": "2025-06-22T12:22:33.695Z",
+      "created_by": "EMP-25-0001",
+      "updated_by": "EMP-25-0001"
+    },
+    "error": "Foreign key violation: menu_item_id=69 not found in menu_items"
+  },
+  {
+    "row": {
+      "id": 1404,
+      "designation_id": 4,
+      "menu_item_id": 43,
+      "can_view": true,
+      "created_at": "2025-06-23T10:22:18.216Z",
+      "updated_at": "2025-06-23T10:22:18.216Z",
+      "created_by": "EMP-25-0001",
+      "updated_by": "EMP-25-0001"
+    },
+    "error": "Foreign key violation: designation_id=4 not found in designations"
+  },
+  {
+    "row": {
+      "id": 283,
+      "designation_id": 34,
+      "menu_item_id": 70,
+      "can_view": true,
+      "created_at": "2025-06-22T12:22:33.695Z",
+      "updated_at": "2025-06-22T12:22:33.695Z",
+      "created_by": "EMP-25-0001",
+      "updated_by": "EMP-25-0001"
+    },
+    "error": "Foreign key violation: menu_item_id=70 not found in menu_items"
+  },
+  {
+    "row": {
+      "id": 285,
+      "designation_id": 34,
+      "menu_item_id": 71,
+      "can_view": true,
+      "created_at": "2025-06-22T12:22:33.695Z",
+      "updated_at": "2025-06-22T12:22:33.695Z",
+      "created_by": "EMP-25-0001",
+      "updated_by": "EMP-25-0001"
+    },
+    "error": "Foreign key violation: menu_item_id=71 not found in menu_items"
+  },
+  {
+    "row": {
+      "id": 1406,
+      "designation_id": 4,
+      "menu_item_id": 44,
+      "can_view": true,
+      "created_at": "2025-06-23T10:22:18.216Z",
+      "updated_at": "2025-06-23T10:22:18.216Z",
+      "created_by": "EMP-25-0001",
+      "updated_by": "EMP-25-0001"
+    },
+    "error": "Foreign key violation: designation_id=4 not found in designations"
+  },
+  {
+    "row": {
+      "id": 287,
+      "designation_id": 34,
+      "menu_item_id": 72,
+      "can_view": true,
+      "created_at": "2025-06-22T12:22:33.695Z",
+      "updated_at": "2025-06-22T12:22:33.695Z",
+      "created_by": "EMP-25-0001",
+      "updated_by": "EMP-25-0001"
+    },
+    "error": "Foreign key violation: menu_item_id=72 not found in menu_items"
+  },
+  {
+    "row": {
+      "id": 280,
+      "designation_id": 34,
+      "menu_item_id": 68,
+      "can_view": true,
+      "created_at": "2025-06-22T12:22:33.695Z",
+      "updated_at": "2025-06-22T12:22:33.695Z",
+      "created_by": "EMP-25-0001",
+      "updated_by": "EMP-25-0001"
+    },
+    "error": "Foreign key violation: menu_item_id=68 not found in menu_items"
+  },
+  {
+    "row": {
+      "id": 289,
+      "designation_id": 34,
+      "menu_item_id": 73,
+      "can_view": false,
+      "created_at": "2025-06-22T12:22:33.695Z",
+      "updated_at": "2025-06-22T12:22:33.695Z",
+      "created_by": "EMP-25-0001",
+      "updated_by": "EMP-25-0001"
+    },
+    "error": "Foreign key violation: menu_item_id=73 not found in menu_items"
+  },
+  {
+    "row": {
+      "id": 290,
+      "designation_id": 34,
+      "menu_item_id": 77,
+      "can_view": false,
+      "created_at": "2025-06-22T12:22:33.695Z",
+      "updated_at": "2025-06-22T12:22:33.695Z",
+      "created_by": "EMP-25-0001",
+      "updated_by": "EMP-25-0001"
+    },
+    "error": "Foreign key violation: menu_item_id=77 not found in menu_items"
+  },
+  {
+    "row": {
+      "id": 291,
+      "designation_id": 34,
+      "menu_item_id": 78,
+      "can_view": false,
+      "created_at": "2025-06-22T12:22:33.695Z",
+      "updated_at": "2025-06-22T12:22:33.695Z",
+      "created_by": "EMP-25-0001",
+      "updated_by": "EMP-25-0001"
+    },
+    "error": "Foreign key violation: menu_item_id=78 not found in menu_items"
+  },
+  {
+    "row": {
+      "id": 292,
+      "designation_id": 34,
+      "menu_item_id": 79,
+      "can_view": false,
+      "created_at": "2025-06-22T12:22:33.695Z",
+      "updated_at": "2025-06-22T12:22:33.695Z",
+      "created_by": "EMP-25-0001",
+      "updated_by": "EMP-25-0001"
+    },
+    "error": "Foreign key violation: menu_item_id=79 not found in menu_items"
+  },
+  {
+    "row": {
+      "id": 1408,
+      "designation_id": 4,
+      "menu_item_id": 45,
+      "can_view": true,
+      "created_at": "2025-06-23T10:22:18.216Z",
+      "updated_at": "2025-06-23T10:22:18.216Z",
+      "created_by": "EMP-25-0001",
+      "updated_by": "EMP-25-0001"
+    },
+    "error": "Foreign key violation: designation_id=4 not found in designations"
+  },
+  {
+    "row": {
+      "id": 1393,
+      "designation_id": 4,
+      "menu_item_id": 37,
+      "can_view": true,
+      "created_at": "2025-06-23T10:22:18.216Z",
+      "updated_at": "2025-06-23T10:22:18.216Z",
+      "created_by": "EMP-25-0001",
+      "updated_by": "EMP-25-0001"
+    },
+    "error": "Foreign key violation: designation_id=4 not found in designations"
+  },
+  {
+    "row": {
+      "id": 311,
+      "designation_id": 32,
+      "menu_item_id": 21,
+      "can_view": false,
+      "created_at": "2025-06-22T12:23:47.169Z",
+      "updated_at": "2025-06-22T12:23:47.169Z",
+      "created_by": "EMP-25-0001",
+      "updated_by": "EMP-25-0001"
+    },
+    "error": "Foreign key violation: designation_id=32 not found in designations"
+  },
+  {
+    "row": {
+      "id": 312,
+      "designation_id": 32,
+      "menu_item_id": 22,
+      "can_view": false,
+      "created_at": "2025-06-22T12:23:47.169Z",
+      "updated_at": "2025-06-22T12:23:47.169Z",
+      "created_by": "EMP-25-0001",
+      "updated_by": "EMP-25-0001"
+    },
+    "error": "Foreign key violation: designation_id=32 not found in designations"
+  },
+  {
+    "row": {
+      "id": 313,
+      "designation_id": 32,
+      "menu_item_id": 23,
+      "can_view": false,
+      "created_at": "2025-06-22T12:23:47.169Z",
+      "updated_at": "2025-06-22T12:23:47.169Z",
+      "created_by": "EMP-25-0001",
+      "updated_by": "EMP-25-0001"
+    },
+    "error": "Foreign key violation: designation_id=32 not found in designations"
+  },
+  {
+    "row": {
+      "id": 314,
+      "designation_id": 32,
+      "menu_item_id": 24,
+      "can_view": false,
+      "created_at": "2025-06-22T12:23:47.169Z",
+      "updated_at": "2025-06-22T12:23:47.169Z",
+      "created_by": "EMP-25-0001",
+      "updated_by": "EMP-25-0001"
+    },
+    "error": "Foreign key violation: designation_id=32 not found in designations"
+  },
+  {
+    "row": {
+      "id": 315,
+      "designation_id": 32,
+      "menu_item_id": 25,
+      "can_view": false,
+      "created_at": "2025-06-22T12:23:47.169Z",
+      "updated_at": "2025-06-22T12:23:47.169Z",
+      "created_by": "EMP-25-0001",
+      "updated_by": "EMP-25-0001"
+    },
+    "error": "Foreign key violation: designation_id=32 not found in designations"
+  },
+  {
+    "row": {
+      "id": 316,
+      "designation_id": 32,
+      "menu_item_id": 26,
+      "can_view": false,
+      "created_at": "2025-06-22T12:23:47.169Z",
+      "updated_at": "2025-06-22T12:23:47.169Z",
+      "created_by": "EMP-25-0001",
+      "updated_by": "EMP-25-0001"
+    },
+    "error": "Foreign key violation: designation_id=32 not found in designations"
+  },
+  {
+    "row": {
+      "id": 317,
+      "designation_id": 32,
+      "menu_item_id": 27,
+      "can_view": false,
+      "created_at": "2025-06-22T12:23:47.169Z",
+      "updated_at": "2025-06-22T12:23:47.169Z",
+      "created_by": "EMP-25-0001",
+      "updated_by": "EMP-25-0001"
+    },
+    "error": "Foreign key violation: designation_id=32 not found in designations"
+  },
+  {
+    "row": {
+      "id": 318,
+      "designation_id": 32,
+      "menu_item_id": 28,
+      "can_view": false,
+      "created_at": "2025-06-22T12:23:47.169Z",
+      "updated_at": "2025-06-22T12:23:47.169Z",
+      "created_by": "EMP-25-0001",
+      "updated_by": "EMP-25-0001"
+    },
+    "error": "Foreign key violation: designation_id=32 not found in designations"
+  },
+  {
+    "row": {
+      "id": 319,
+      "designation_id": 32,
+      "menu_item_id": 29,
+      "can_view": false,
+      "created_at": "2025-06-22T12:23:47.169Z",
+      "updated_at": "2025-06-22T12:23:47.169Z",
+      "created_by": "EMP-25-0001",
+      "updated_by": "EMP-25-0001"
+    },
+    "error": "Foreign key violation: designation_id=32 not found in designations"
+  },
+  {
+    "row": {
+      "id": 320,
+      "designation_id": 32,
+      "menu_item_id": 30,
+      "can_view": false,
+      "created_at": "2025-06-22T12:23:47.169Z",
+      "updated_at": "2025-06-22T12:23:47.169Z",
+      "created_by": "EMP-25-0001",
+      "updated_by": "EMP-25-0001"
+    },
+    "error": "Foreign key violation: designation_id=32 not found in designations"
+  },
+  {
+    "row": {
+      "id": 321,
+      "designation_id": 32,
+      "menu_item_id": 31,
+      "can_view": false,
+      "created_at": "2025-06-22T12:23:47.169Z",
+      "updated_at": "2025-06-22T12:23:47.169Z",
+      "created_by": "EMP-25-0001",
+      "updated_by": "EMP-25-0001"
+    },
+    "error": "Foreign key violation: designation_id=32 not found in designations"
+  },
+  {
+    "row": {
+      "id": 322,
+      "designation_id": 32,
+      "menu_item_id": 32,
+      "can_view": false,
+      "created_at": "2025-06-22T12:23:47.169Z",
+      "updated_at": "2025-06-22T12:23:47.169Z",
+      "created_by": "EMP-25-0001",
+      "updated_by": "EMP-25-0001"
+    },
+    "error": "Foreign key violation: designation_id=32 not found in designations"
+  },
+  {
+    "row": {
+      "id": 323,
+      "designation_id": 32,
+      "menu_item_id": 33,
+      "can_view": false,
+      "created_at": "2025-06-22T12:23:47.169Z",
+      "updated_at": "2025-06-22T12:23:47.169Z",
+      "created_by": "EMP-25-0001",
+      "updated_by": "EMP-25-0001"
+    },
+    "error": "Foreign key violation: designation_id=32 not found in designations"
+  },
+  {
+    "row": {
+      "id": 324,
+      "designation_id": 32,
+      "menu_item_id": 34,
+      "can_view": false,
+      "created_at": "2025-06-22T12:23:47.169Z",
+      "updated_at": "2025-06-22T12:23:47.169Z",
+      "created_by": "EMP-25-0001",
+      "updated_by": "EMP-25-0001"
+    },
+    "error": "Foreign key violation: designation_id=32 not found in designations"
+  },
+  {
+    "row": {
+      "id": 325,
+      "designation_id": 32,
+      "menu_item_id": 35,
+      "can_view": false,
+      "created_at": "2025-06-22T12:23:47.169Z",
+      "updated_at": "2025-06-22T12:23:47.169Z",
+      "created_by": "EMP-25-0001",
+      "updated_by": "EMP-25-0001"
+    },
+    "error": "Foreign key violation: designation_id=32 not found in designations"
+  },
+  {
+    "row": {
+      "id": 326,
+      "designation_id": 32,
+      "menu_item_id": 36,
+      "can_view": false,
+      "created_at": "2025-06-22T12:23:47.169Z",
+      "updated_at": "2025-06-22T12:23:47.169Z",
+      "created_by": "EMP-25-0001",
+      "updated_by": "EMP-25-0001"
+    },
+    "error": "Foreign key violation: designation_id=32 not found in designations"
+  },
+  {
+    "row": {
+      "id": 327,
+      "designation_id": 32,
+      "menu_item_id": 37,
+      "can_view": false,
+      "created_at": "2025-06-22T12:23:47.169Z",
+      "updated_at": "2025-06-22T12:23:47.169Z",
+      "created_by": "EMP-25-0001",
+      "updated_by": "EMP-25-0001"
+    },
+    "error": "Foreign key violation: designation_id=32 not found in designations"
+  },
+  {
+    "row": {
+      "id": 328,
+      "designation_id": 32,
+      "menu_item_id": 38,
+      "can_view": false,
+      "created_at": "2025-06-22T12:23:47.169Z",
+      "updated_at": "2025-06-22T12:23:47.169Z",
+      "created_by": "EMP-25-0001",
+      "updated_by": "EMP-25-0001"
+    },
+    "error": "Foreign key violation: designation_id=32 not found in designations"
+  },
+  {
+    "row": {
+      "id": 329,
+      "designation_id": 32,
+      "menu_item_id": 39,
+      "can_view": false,
+      "created_at": "2025-06-22T12:23:47.169Z",
+      "updated_at": "2025-06-22T12:23:47.169Z",
+      "created_by": "EMP-25-0001",
+      "updated_by": "EMP-25-0001"
+    },
+    "error": "Foreign key violation: designation_id=32 not found in designations"
+  },
+  {
+    "row": {
+      "id": 330,
+      "designation_id": 32,
+      "menu_item_id": 40,
+      "can_view": false,
+      "created_at": "2025-06-22T12:23:47.169Z",
+      "updated_at": "2025-06-22T12:23:47.169Z",
+      "created_by": "EMP-25-0001",
+      "updated_by": "EMP-25-0001"
+    },
+    "error": "Foreign key violation: designation_id=32 not found in designations"
+  },
+  {
+    "row": {
+      "id": 331,
+      "designation_id": 32,
+      "menu_item_id": 41,
+      "can_view": false,
+      "created_at": "2025-06-22T12:23:47.169Z",
+      "updated_at": "2025-06-22T12:23:47.169Z",
+      "created_by": "EMP-25-0001",
+      "updated_by": "EMP-25-0001"
+    },
+    "error": "Foreign key violation: designation_id=32 not found in designations"
+  },
+  {
+    "row": {
+      "id": 332,
+      "designation_id": 32,
+      "menu_item_id": 42,
+      "can_view": false,
+      "created_at": "2025-06-22T12:23:47.169Z",
+      "updated_at": "2025-06-22T12:23:47.169Z",
+      "created_by": "EMP-25-0001",
+      "updated_by": "EMP-25-0001"
+    },
+    "error": "Foreign key violation: designation_id=32 not found in designations"
+  },
+  {
+    "row": {
+      "id": 333,
+      "designation_id": 32,
+      "menu_item_id": 43,
+      "can_view": false,
+      "created_at": "2025-06-22T12:23:47.169Z",
+      "updated_at": "2025-06-22T12:23:47.169Z",
+      "created_by": "EMP-25-0001",
+      "updated_by": "EMP-25-0001"
+    },
+    "error": "Foreign key violation: designation_id=32 not found in designations"
+  }
+]

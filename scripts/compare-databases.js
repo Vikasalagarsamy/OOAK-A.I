@@ -1,193 +1,131 @@
 const { Pool } = require('pg');
+const config = require('./config');
 
-// Development database configuration
-const devPool = new Pool({
-  host: 'localhost',
-  port: 5432,
-  database: 'ooak_ai_dev',
-  user: 'vikasalagarsamy',
-  password: '',
-  ssl: false
-});
+// Initialize connection pools
+const devPool = new Pool(config.development.database);
+const prodPool = new Pool(config.production.database);
 
-// Production database configuration
-const prodPool = new Pool({
-  user: 'ooak_admin',
-  host: 'dpg-d1bf04er433s739icgmg-a.singapore-postgres.render.com',
-  database: 'ooak_ai_db',
-  password: 'mSglqEawN72hkoEj8tSNF5qv9vJr3U6k',
-  port: 5432,
-  ssl: {
-    rejectUnauthorized: false
-  }
-});
-
-async function listTables(pool) {
-  const result = await pool.query(`
+async function getTableInfo(pool, schema = 'public') {
+  // Get all tables
+  const tables = await pool.query(`
     SELECT table_name 
     FROM information_schema.tables 
-    WHERE table_schema = 'public' 
-    ORDER BY table_name;
-  `);
-  return result.rows.map(row => row.table_name);
-}
+    WHERE table_schema = $1 
+    AND table_type = 'BASE TABLE'
+    ORDER BY table_name
+  `, [schema]);
 
-async function compareDesignations() {
-  console.log('\n🔍 Comparing Designations:');
-  console.log('========================');
-  
-  const devDesignations = await devPool.query('SELECT * FROM designations ORDER BY id');
-  const prodDesignations = await prodPool.query('SELECT * FROM designations ORDER BY id');
-  
-  console.log(`Development: ${devDesignations.rows.length} designations`);
-  console.log(`Production: ${prodDesignations.rows.length} designations`);
-  
-  // Compare MANAGING DIRECTOR specifically
-  const devMD = devDesignations.rows.find(d => d.name === 'MANAGING DIRECTOR');
-  const prodMD = prodDesignations.rows.find(d => d.name === 'MANAGING DIRECTOR');
-  
-  console.log('\nMANAGING DIRECTOR status:');
-  console.log('Dev:', devMD ? '✅ Present' : '❌ Missing');
-  console.log('Prod:', prodMD ? '✅ Present' : '❌ Missing');
-}
+  const tableInfo = {};
 
-async function compareMenuItems() {
-  console.log('\n🔍 Comparing Menu Items:');
-  console.log('=====================');
-  
-  const devMenus = await devPool.query(`
-    SELECT id, name, path, parent_id 
-    FROM menu_items 
-    WHERE path IN ('/admin', '/admin/menu-permissions')
-    ORDER BY id
-  `);
-  
-  const prodMenus = await prodPool.query(`
-    SELECT id, name, path, parent_id 
-    FROM menu_items 
-    WHERE path IN ('/admin', '/admin/menu-permissions')
-    ORDER BY id
-  `);
-  
-  console.log(`\nSystem Administration & Menu Permissions in Development:`);
-  devMenus.rows.forEach(menu => {
-    console.log(`- ${menu.name} (${menu.path})`);
-  });
-  
-  console.log(`\nSystem Administration & Menu Permissions in Production:`);
-  prodMenus.rows.forEach(menu => {
-    console.log(`- ${menu.name} (${menu.path})`);
-  });
-}
+  // Get column info and row count for each table
+  for (const table of tables.rows) {
+    const tableName = table.table_name;
+    
+    // Get columns
+    const columns = await pool.query(`
+      SELECT column_name, data_type, udt_name, is_nullable, column_default
+      FROM information_schema.columns
+      WHERE table_schema = $1 AND table_name = $2
+      ORDER BY ordinal_position
+    `, [schema, tableName]);
 
-async function compareMenuPermissions() {
-  console.log('\n🔍 Comparing Designation Menu Permissions:');
-  console.log('=====================================');
-  
-  // First, let's check the table structure in both databases
-  console.log('\nTable Structure in Development:');
-  const devStructure = await devPool.query(`
-    SELECT column_name, data_type 
-    FROM information_schema.columns 
-    WHERE table_name = 'designation_menu_permissions'
-    ORDER BY column_name
-  `);
-  devStructure.rows.forEach(col => {
-    console.log(`${col.column_name}: ${col.data_type}`);
-  });
-  
-  console.log('\nTable Structure in Production:');
-  const prodStructure = await prodPool.query(`
-    SELECT column_name, data_type 
-    FROM information_schema.columns 
-    WHERE table_name = 'designation_menu_permissions'
-    ORDER BY column_name
-  `);
-  prodStructure.rows.forEach(col => {
-    console.log(`${col.column_name}: ${col.data_type}`);
-  });
-  
-  // Get menu item IDs for System Administration and Menu Permissions
-  const menuQuery = `
-    SELECT id, name, path
-    FROM menu_items 
-    WHERE path IN ('/admin', '/admin/menu-permissions')
-  `;
-  
-  const devMenus = await devPool.query(menuQuery);
-  const prodMenus = await prodPool.query(menuQuery);
-  
-  // Get MANAGING DIRECTOR permissions
-  const devPerms = await devPool.query(`
-    SELECT dmp.*, d.name as designation_name, mi.name as menu_name, mi.path
-    FROM designation_menu_permissions dmp
-    JOIN designations d ON d.id = dmp.designation_id
-    JOIN menu_items mi ON mi.id = dmp.menu_item_id
-    WHERE d.name = 'MANAGING DIRECTOR'
-    AND mi.path IN ('/admin', '/admin/menu-permissions')
-    ORDER BY mi.path
-  `);
-  
-  const prodPerms = await prodPool.query(`
-    SELECT dmp.*, d.name as designation_name, mi.name as menu_name, mi.path
-    FROM designation_menu_permissions dmp
-    JOIN designations d ON d.id = dmp.designation_id
-    JOIN menu_items mi ON mi.id = dmp.menu_item_id
-    WHERE d.name = 'MANAGING DIRECTOR'
-    AND mi.path IN ('/admin', '/admin/menu-permissions')
-    ORDER BY mi.path
-  `);
-  
-  console.log('\nMANAGING DIRECTOR menu permissions:');
-  console.log('Dev Menus:', devMenus.rows.length, 'found');
-  devPerms.rows.forEach(perm => {
-    console.log(`- ${perm.menu_name} (${perm.path}): ${perm.can_view ? '✅ Can View' : '❌ No View'}`);
-  });
-  
-  console.log('\nProd Menus:', prodMenus.rows.length, 'found');
-  prodPerms.rows.forEach(perm => {
-    console.log(`- ${perm.menu_name} (${perm.path}): ${perm.can_view ? '✅ Can View' : '❌ No View'}`);
-  });
-}
+    // Get row count
+    const count = await pool.query(`
+      SELECT COUNT(*) as count 
+      FROM "${schema}"."${tableName}"
+    `);
 
-async function compareDatabaseStructure() {
-  console.log('\n🔍 Comparing Database Structure:');
-  console.log('============================');
-  
-  const devTables = await listTables(devPool);
-  const prodTables = await listTables(prodPool);
-  
-  console.log(`Development: ${devTables.length} tables`);
-  console.log(`Production: ${prodTables.length} tables`);
-  
-  const missingInProd = devTables.filter(t => !prodTables.includes(t));
-  const missingInDev = prodTables.filter(t => !devTables.includes(t));
-  
-  if (missingInProd.length > 0) {
-    console.log('\nTables missing in Production:', missingInProd.join(', '));
+    // Get sample data
+    const sample = await pool.query(`
+      SELECT * 
+      FROM "${schema}"."${tableName}"
+      LIMIT 1
+    `);
+
+    tableInfo[tableName] = {
+      columns: columns.rows,
+      rowCount: parseInt(count.rows[0].count),
+      sampleData: sample.rows[0]
+    };
   }
-  
-  if (missingInDev.length > 0) {
-    console.log('\nTables missing in Development:', missingInDev.join(', '));
-  }
+
+  return tableInfo;
 }
 
-async function main() {
+async function compareSchemas() {
   try {
-    console.log('🚀 Starting Database Comparison...\n');
+    console.log('Comparing development and production databases...\n');
+
+    const devInfo = await getTableInfo(devPool);
+    const prodInfo = await getTableInfo(prodPool);
+
+    // Compare tables
+    const allTables = new Set([...Object.keys(devInfo), ...Object.keys(prodInfo)]);
+
+    console.log('=== Schema Comparison ===\n');
     
-    await compareDatabaseStructure();
-    await compareDesignations();
-    await compareMenuItems();
-    await compareMenuPermissions();
-    
-    console.log('\n✅ Comparison completed!');
+    for (const tableName of allTables) {
+      console.log(`Table: ${tableName}`);
+      
+      if (!devInfo[tableName]) {
+        console.log('  ❌ Missing in development');
+        continue;
+      }
+      
+      if (!prodInfo[tableName]) {
+        console.log('  ❌ Missing in production');
+        continue;
+      }
+
+      // Compare column count
+      const devColumns = devInfo[tableName].columns;
+      const prodColumns = prodInfo[tableName].columns;
+      
+      console.log(`  Columns: ${devColumns.length} (dev) vs ${prodColumns.length} (prod)`);
+      
+      // Compare row count
+      const devCount = devInfo[tableName].rowCount;
+      const prodCount = prodInfo[tableName].rowCount;
+      
+      console.log(`  Rows: ${devCount} (dev) vs ${prodCount} (prod)`);
+      
+      // Check for column differences
+      const devColNames = new Set(devColumns.map(c => c.column_name));
+      const prodColNames = new Set(prodColumns.map(c => c.column_name));
+      
+      const missingInProd = [...devColNames].filter(x => !prodColNames.has(x));
+      const missingInDev = [...prodColNames].filter(x => !devColNames.has(x));
+      
+      if (missingInProd.length > 0) {
+        console.log('  ⚠️  Columns missing in production:', missingInProd.join(', '));
+      }
+      
+      if (missingInDev.length > 0) {
+        console.log('  ⚠️  Columns missing in development:', missingInDev.join(', '));
+      }
+
+      // Compare column types
+      const typeMismatches = [];
+      devColumns.forEach(devCol => {
+        const prodCol = prodColumns.find(c => c.column_name === devCol.column_name);
+        if (prodCol && (devCol.data_type !== prodCol.data_type || devCol.udt_name !== prodCol.udt_name)) {
+          typeMismatches.push(`${devCol.column_name} (dev: ${devCol.data_type}, prod: ${prodCol.data_type})`);
+        }
+      });
+
+      if (typeMismatches.length > 0) {
+        console.log('  ⚠️  Type mismatches:', typeMismatches.join(', '));
+      }
+
+      console.log('');
+    }
+
   } catch (error) {
-    console.error('❌ Error during comparison:', error);
+    console.error('Error comparing schemas:', error);
   } finally {
-    devPool.end();
-    prodPool.end();
+    await devPool.end();
+    await prodPool.end();
   }
 }
 
-main(); 
+compareSchemas().catch(console.error); 

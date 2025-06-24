@@ -1,12 +1,171 @@
-const { runProductionMigration, getProductionClient } = require('../lib/db-production');
+const { Pool } = require('pg');
 const fs = require('fs/promises');
 const path = require('path');
 
-async function runDataMigration() {
+// Development database configuration
+const DEV_CONFIG = {
+  user: 'vikasalagarsamy',
+  host: 'localhost',
+  database: 'ooak_ai_db',
+  port: 5432
+};
+
+// Production database configuration
+const PROD_CONFIG = {
+  connectionString: 'postgresql://ooak_admin:mSglqEawN72hkoEj8tSNF5qv9vJr3U6k@dpg-d1bf04er433s739icgmg-a.singapore-postgres.render.com/ooak_ai_db',
+  ssl: { rejectUnauthorized: false },
+  max: 5,
+  idleTimeoutMillis: 30000,
+  connectionTimeoutMillis: 10000,
+};
+
+// Create pools
+const devPool = new Pool(DEV_CONFIG);
+const prodPool = new Pool(PROD_CONFIG);
+
+async function getTableColumns(client, tableName) {
+  const { rows } = await client.query(`
+    SELECT column_name, data_type 
+    FROM information_schema.columns 
+    WHERE table_schema = 'public' 
+    AND table_name = $1
+  `, [tableName]);
+  return rows.map(row => row.column_name);
+}
+
+async function migrateTable(devClient, prodClient, tableName, orderBy = 'id') {
+  console.log(`\n📦 Migrating ${tableName}...`);
+  
   try {
-    const client = await getProductionClient();
+    // Get column lists from both databases
+    const devColumns = await getTableColumns(devClient, tableName);
+    const prodColumns = await getTableColumns(prodClient, tableName);
+    
+    // Find common columns
+    const commonColumns = devColumns.filter(col => prodColumns.includes(col));
+    
+    if (commonColumns.length === 0) {
+      console.log(`❌ No matching columns found in ${tableName}`);
+      return;
+    }
+
+    // Get data from development using only common columns
+    const { rows } = await devClient.query(`
+      SELECT ${commonColumns.join(', ')} 
+      FROM ${tableName} 
+      ORDER BY ${orderBy}
+    `);
+    
+    if (rows.length === 0) {
+      console.log(`ℹ️  No data in ${tableName} to migrate`);
+      return;
+    }
+
+    // Insert each row
+    for (const row of rows) {
+      const columnList = commonColumns.join(', ');
+      const valuePlaceholders = commonColumns.map((_, i) => `$${i + 1}`).join(', ');
+      const values = commonColumns.map(col => row[col]);
+
+      try {
+        await prodClient.query(`
+          INSERT INTO ${tableName} (${columnList})
+          VALUES (${valuePlaceholders})
+          ON CONFLICT DO NOTHING
+        `, values);
+      } catch (error) {
+        console.error(`❌ Error inserting into ${tableName}:`, error.message);
+        throw error;
+      }
+    }
+
+    console.log(`✅ Migrated ${rows.length} rows from ${tableName}`);
+    if (devColumns.length !== prodColumns.length) {
+      console.log(`ℹ️  Note: Schema difference detected`);
+      console.log(`   Dev columns: ${devColumns.length}`);
+      console.log(`   Prod columns: ${prodColumns.length}`);
+      console.log(`   Only migrated common columns: ${commonColumns.length}`);
+    }
+  } catch (error) {
+    console.error(`❌ Error migrating ${tableName}:`, error.message);
+    throw error;
+  }
+}
+
+async function runDataMigration() {
+  const devClient = await devPool.connect();
+  const prodClient = await prodPool.connect();
+  
+  try {
+    // Start transaction
+    await prodClient.query('BEGIN');
 
     try {
+      // Get list of tables
+      const { rows: tables } = await devClient.query(`
+        SELECT tablename 
+        FROM pg_tables 
+        WHERE schemaname = 'public'
+        ORDER BY tablename;
+      `);
+
+      // Define migration order (tables with foreign keys should come after their dependencies)
+      const migrationOrder = [
+        'designations',
+        'companies',
+        'branches',
+        'departments',
+        'roles',
+        'employees',
+        'menu_items',
+        'designation_menu_permissions',
+        'lead_sources',
+        'leads',
+        'lead_assignments'
+      ];
+
+      // Migrate each table in order
+      for (const tableName of migrationOrder) {
+        if (tables.some(t => t.tablename === tableName)) {
+          await migrateTable(devClient, prodClient, tableName);
+        }
+      }
+
+      // Verify the migration
+      console.log('\n🔍 Verifying migration...');
+      
+      for (const tableName of migrationOrder) {
+        if (tables.some(t => t.tablename === tableName)) {
+          const devCount = (await devClient.query(`SELECT COUNT(*) FROM ${tableName}`)).rows[0].count;
+          const prodCount = (await prodClient.query(`SELECT COUNT(*) FROM ${tableName}`)).rows[0].count;
+          
+          console.log(`\n📊 ${tableName}:`);
+          console.log(`   Development: ${devCount} rows`);
+          console.log(`   Production:  ${prodCount} rows`);
+        }
+      }
+
+      await prodClient.query('COMMIT');
+      console.log('\n✅ Data migration completed successfully');
+
+    } catch (error) {
+      await prodClient.query('ROLLBACK');
+      throw error;
+    }
+
+  } catch (error) {
+    console.error('\n❌ Data migration failed:', error.message);
+    process.exit(1);
+  } finally {
+    await devClient.release();
+    await prodClient.release();
+    await devPool.end();
+    await prodPool.end();
+  }
+}
+
+console.log('🚀 Starting Complete Data Migration...\n');
+runDataMigration(); 
       // 1. Insert MANAGING DIRECTOR designation
       console.log('📝 Adding MANAGING DIRECTOR designation...');
       await client.query(`
@@ -152,3 +311,17 @@ async function runDataMigration() {
 // Run the data migration
 console.log('🚀 Starting Cursor Production Data Migration...\n');
 runDataMigration().catch(console.error); 
+
+  } catch (error) {
+    console.error('\n❌ Data migration failed:', error.message);
+    process.exit(1);
+  } finally {
+    await devClient.release();
+    await prodClient.release();
+    await devPool.end();
+    await prodPool.end();
+  }
+}
+
+console.log('🚀 Starting Complete Data Migration...\n');
+runDataMigration(); 

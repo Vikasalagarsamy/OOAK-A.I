@@ -4,42 +4,46 @@ async function checkAuthState() {
   try {
     console.log('🔍 Checking authentication state...\n');
 
-    // 1. Check users table
+    // Check users table structure
     const tableCheck = await db.query(`
       SELECT column_name, data_type 
       FROM information_schema.columns 
-      WHERE table_name = 'users';
+      WHERE table_name = 'users'
     `);
 
     console.log('Users Table Structure:');
-    if (tableCheck.rows.length > 0) {
-      tableCheck.rows.forEach((col: any) => {
+    if (tableCheck.success && tableCheck.data && tableCheck.data.length > 0) {
+      tableCheck.data.forEach((col: any) => {
         console.log(`  - ${col.column_name}: ${col.data_type}`);
       });
     } else {
-      console.log('❌ Users table does not exist');
+      console.log('No columns found or table does not exist');
     }
 
-    // 2. Check test user
-    const userCheck = await db.query(
-      'SELECT id, employee_id, role FROM users WHERE employee_id = $1',
-      ['EMP-25-0001']
-    );
-
-    console.log('\nTest User:');
-    if (userCheck.rows.length > 0) {
-      const user = userCheck.rows[0];
-      console.log('✅ Test user exists:');
-      console.log(`  - ID: ${user.id}`);
-      console.log(`  - Employee ID: ${user.employee_id}`);
-      console.log(`  - Role: ${user.role}`);
+    // Check if any users exist
+    const userCount = await db.query('SELECT COUNT(*) as count FROM users');
+    
+    if (userCount.success && userCount.data) {
+      console.log(`\nTotal Users: ${userCount.data[0].count}`);
     } else {
-      console.log('❌ Test user not found');
+      console.log('\nFailed to get user count');
+    }
+
+    // Check user roles
+    const roleCheck = await db.query('SELECT DISTINCT role FROM users');
+    
+    if (roleCheck.success && roleCheck.data && roleCheck.data.length > 0) {
+      console.log('\nUser Roles:');
+      roleCheck.data.forEach((role: any) => {
+        console.log(`  - ${role.role}`);
+      });
+    } else {
+      console.log('\nNo roles found');
     }
 
   } catch (error) {
-    console.error('\n❌ Error:', error);
+    console.error('Error checking auth state:', error);
   }
 }
 
-checkAuthState(); 
+checkAuthState().catch(console.error); 

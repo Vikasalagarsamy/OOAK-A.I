@@ -1,4 +1,4 @@
-# OOAK.AI Production Deployment Guide - Render.com
+# OOAK-AI Deployment Guide
 
 ## 🚀 Production Deployment Overview
 
@@ -244,4 +244,170 @@ For deployment support:
 ---
 **🎉 Congratulations! Your AI-powered wedding photography platform is now live in production!**
 
-Your OOAK.AI platform is ready to process leads, manage clients, and deliver automated services with 98.5% efficiency and zero human intervention. 
+Your OOAK.AI platform is ready to process leads, manage clients, and deliver automated services with 98.5% efficiency and zero human intervention.
+
+## Pre-Deployment Checklist
+
+### 1. Code Review
+- [ ] All PR comments addressed
+- [ ] Tests passing
+- [ ] Code coverage maintained/improved
+- [ ] No security vulnerabilities
+- [ ] Performance benchmarks acceptable
+
+### 2. Environment Preparation
+- [ ] Database backups completed
+- [ ] Environment variables updated
+- [ ] Third-party service credentials verified
+- [ ] SSL certificates valid
+- [ ] DNS settings checked
+
+### 3. Dependency Verification
+- [ ] `package.json` changes reviewed
+- [ ] `node_modules` clean install tested
+- [ ] Database migration scripts tested
+- [ ] API compatibility verified
+
+## Deployment Process
+
+### 1. Selecting Deployment Commit
+
+When choosing a commit to deploy on Render.com:
+
+1. **Check Dependency Chain**
+   ```bash
+   git log --graph --oneline --all
+   ```
+   - Look for dependent commits
+   - Verify merge order
+   - Check for breaking changes
+
+2. **Verify Commit Content**
+   ```bash
+   git show <commit-hash>
+   ```
+   - Review changed files
+   - Check for migration scripts
+   - Verify environment changes
+
+### 2. Deployment Order
+
+Always follow this order:
+
+1. **Database Changes**
+   ```bash
+   # Backup current database
+   pg_dump -U postgres -d ooak_ai > backup_$(date +%Y%m%d).sql
+   
+   # Apply migrations
+   node scripts/apply-schema.js
+   ```
+
+2. **Backend Services**
+   - Deploy API changes first
+   - Monitor logs for errors
+   - Verify health endpoints
+
+3. **Frontend Changes**
+   - Deploy after backend is stable
+   - Clear CDN caches if needed
+   - Verify client-side functionality
+
+### 3. Post-Deployment Verification
+
+1. **Health Checks**
+   - [ ] API endpoints responding
+   - [ ] Database connections stable
+   - [ ] Cache services running
+   - [ ] Background jobs executing
+
+2. **Performance Monitoring**
+   - [ ] Response times normal
+   - [ ] CPU usage stable
+   - [ ] Memory usage acceptable
+   - [ ] Database query performance
+
+3. **Error Monitoring**
+   - [ ] Check error logs
+   - [ ] Monitor exception tracking
+   - [ ] Verify alert systems
+
+## Rollback Procedures
+
+### 1. When to Rollback
+- Critical functionality broken
+- Unacceptable performance degradation
+- Security vulnerability discovered
+- Data integrity issues
+
+### 2. Rollback Steps
+```bash
+# 1. Revert to previous commit on Render.com
+Select previous working commit
+
+# 2. Restore database if needed
+psql -U postgres -d ooak_ai < backup_$(date +%Y%m%d).sql
+
+# 3. Clear caches
+# Add cache clearing commands here
+
+# 4. Verify system health
+curl https://api.ooak-ai.com/health
+```
+
+## Version Tracking
+
+After successful deployment:
+
+```bash
+# Tag the deployment
+git tag -a v1.x.x <commit-hash> -m "Production deployment $(date)"
+git push origin v1.x.x
+
+# Update deployment log
+echo "## $(date)
+- Version: v1.x.x
+- Commit: <commit-hash>
+- Changes: [Description]
+- Deployed by: [Name]" >> deployments.log
+```
+
+## Monitoring and Alerts
+
+### 1. Key Metrics to Monitor
+- API response times
+- Error rates
+- Database performance
+- Memory usage
+- CPU utilization
+
+### 2. Alert Thresholds
+- Response time > 1000ms
+- Error rate > 1%
+- CPU usage > 80%
+- Memory usage > 85%
+
+## Emergency Contacts
+
+- Backend Team Lead: [Contact]
+- Frontend Team Lead: [Contact]
+- DevOps Lead: [Contact]
+- Database Admin: [Contact]
+
+## Useful Commands
+
+```bash
+# Check application logs
+render logs
+
+# Monitor system health
+curl https://api.ooak-ai.com/health
+
+# Verify database connections
+node scripts/check-db-connection.js
+
+# Test API endpoints
+curl -X GET https://api.ooak-ai.com/api/v1/status
+```
+
+Remember: Always document any issues encountered during deployment and their solutions in the project wiki. 

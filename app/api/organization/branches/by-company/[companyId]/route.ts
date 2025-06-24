@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { getDbPool } from '@/lib/db'
+import { getPool } from '@/lib/db'
 import { Pool } from 'pg'
 
 // GET /api/organization/branches/by-company/[companyId]
@@ -7,7 +7,7 @@ export async function GET(
   request: NextRequest,
   { params }: { params: { companyId: string } }
 ) {
-  const pool: Pool = getDbPool()
+  const pool: Pool = getPool()
 
   try {
     const result = await pool.query(

@@ -9,10 +9,12 @@
 /build
 
 # Environment variables
+.env.production
 .env.local
 .env.development.local
 .env.test.local
 .env.production.local
+
 
 # Runtime data
 pids

@@ -1,9 +1,9 @@
 import { NextResponse } from 'next/server';
-import { getDbPool } from '@/lib/db';
+import { getPool } from '@/lib/db';
 import { Pool } from 'pg';
 
 export async function GET() {
-  const pool: Pool = getDbPool();
+  const pool: Pool = getPool();
 
   try {
     const result = await pool.query(`
@@ -40,7 +40,7 @@ export async function GET() {
 }
 
 export async function POST(request: Request) {
-  const pool: Pool = getDbPool();
+  const pool: Pool = getPool();
 
   try {
     const data = await request.json();
