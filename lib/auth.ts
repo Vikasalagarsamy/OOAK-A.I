@@ -8,7 +8,8 @@ import CredentialsProvider from 'next-auth/providers/credentials';
 
 // Ensure we have a secret for NextAuth
 if (!process.env.NEXTAUTH_SECRET && process.env.NODE_ENV === 'production') {
-  throw new Error('NEXTAUTH_SECRET must be set in production');
+  console.error('NEXTAUTH_SECRET is not set in production environment');
+  process.exit(1);
 }
 
 // Use NEXTAUTH_SECRET for both NextAuth and JWT
@@ -20,6 +21,7 @@ const JWT_SECRET = new TextEncoder().encode(
 
 const JWT_EXPIRES_IN = '7d';
 const COOKIE_NAME = 'ooak_auth_token';
+const COOKIE_DOMAIN = process.env.COOKIE_DOMAIN || 'ooak.photography';
 
 interface Credentials {
   username: string;
@@ -34,6 +36,32 @@ interface EmployeeAuthData {
   email: string;
   designation_id: number;
 }
+
+// Add error handling for database connection
+const handleDatabaseError = (error: unknown) => {
+  console.error('Database error:', error);
+  if (error instanceof Error) {
+    return new Error(`Database error: ${error.message}`);
+  }
+  return new Error('Unknown database error');
+};
+
+// Add connection retry logic
+const withRetry = async <T>(
+  operation: () => Promise<T>,
+  retries = 3,
+  delay = 1000
+): Promise<T> => {
+  try {
+    return await operation();
+  } catch (error) {
+    if (retries > 0) {
+      await new Promise(resolve => setTimeout(resolve, delay));
+      return withRetry(operation, retries - 1, delay * 2);
+    }
+    throw error;
+  }
+};
 
 export class AuthService {
   // Hash password using bcrypt
@@ -77,6 +105,7 @@ export class AuthService {
       sameSite: 'lax',
       maxAge: 7 * 24 * 60 * 60, // 7 days
       path: '/',
+      domain: COOKIE_DOMAIN,
     });
   }
 
