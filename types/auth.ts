@@ -1,4 +1,6 @@
 import type { JWTPayload as JoseJWTPayload } from 'jose';
+import 'next-auth';
+import { DefaultSession } from 'next-auth';
 
 export interface Employee {
   id: number;
@@ -144,4 +146,38 @@ export const ROLE_PERMISSIONS: RolePermissions = {
     Permission.VIEW_DASHBOARD,
     Permission.VIEW_PROFILE,
   ],
-}; 
+};
+
+declare module 'next-auth' {
+  interface User extends AuthUser {}
+
+  interface Session extends DefaultSession {
+    user: User & {
+      id: string;
+      employee_id: string;
+      first_name: string;
+      last_name: string;
+      email?: string;
+      designation: {
+        id: number;
+        name: string;
+      };
+      permissions: Permission[];
+    };
+  }
+}
+
+declare module 'next-auth/jwt' {
+  interface JWT {
+    id: string;
+    employee_id: string;
+    first_name: string;
+    last_name: string;
+    email?: string;
+    designation: {
+      id: number;
+      name: string;
+    };
+    permissions: Permission[];
+  }
+} 

@@ -3,10 +3,26 @@ import { cookies } from 'next/headers';
 import { query } from './db';
 import { AuthUser, JWTPayload, Permission, ROLE_PERMISSIONS } from '@/types/auth';
 import { jwtVerify, SignJWT } from 'jose';
+import { NextAuthOptions } from 'next-auth';
+import CredentialsProvider from 'next-auth/providers/credentials';
 
 const JWT_SECRET = new TextEncoder().encode(process.env.JWT_SECRET || 'your-secret-key');
 const JWT_EXPIRES_IN = '7d';
 const COOKIE_NAME = 'ooak_auth_token';
+
+interface Credentials {
+  username: string;
+  password: string;
+}
+
+interface EmployeeAuthData {
+  id: number;
+  employee_id: string;
+  first_name: string;
+  last_name: string;
+  email: string;
+  designation_id: number;
+}
 
 export class AuthService {
   // Hash password using bcrypt
@@ -268,4 +284,150 @@ export async function signToken(payload: JWTPayload): Promise<string> {
     console.error('Token signing error:', error);
     throw error;
   }
-} 
+}
+
+export const authOptions: NextAuthOptions = {
+  providers: [
+    CredentialsProvider({
+      name: 'Credentials',
+      credentials: {
+        username: { label: "Username", type: "text" },
+        password: { label: "Password", type: "password" }
+      },
+      async authorize(credentials, req) {
+        console.log('Starting authorization for:', credentials?.username);
+
+        if (!credentials?.username || !credentials?.password) {
+          console.log('Missing credentials');
+          return null;
+        }
+
+        try {
+          console.log('Querying database for user:', credentials.username);
+          
+          // First, get the user without joins to verify they exist
+          const userResult = await query(`
+            SELECT 
+              id,
+              employee_id,
+              first_name,
+              last_name,
+              email,
+              password_hash,
+              designation_id,
+              is_active
+            FROM employees 
+            WHERE employee_id = $1
+          `, [credentials.username]);
+
+          console.log('Initial user query result:', {
+            success: userResult.success,
+            hasData: userResult.data && userResult.data.length > 0
+          });
+
+          if (!userResult.success || !userResult.data || userResult.data.length === 0) {
+            console.log('User not found:', credentials.username);
+            return null;
+          }
+
+          const user = userResult.data[0];
+
+          if (!user.is_active) {
+            console.log('User is not active:', credentials.username);
+            return null;
+          }
+
+          // Verify password using bcrypt
+          console.log('Verifying password for user:', credentials.username);
+          const isValidPassword = await bcrypt.compare(credentials.password, user.password_hash);
+          
+          if (!isValidPassword) {
+            console.log('Invalid password for user:', credentials.username);
+            return null;
+          }
+
+          // Now get additional user data
+          const detailsResult = await query(`
+            SELECT 
+              d.name as designation_name,
+              ARRAY_AGG(DISTINCT dmp.menu_item_id) as permissions
+            FROM designations d
+            LEFT JOIN designation_menu_permissions dmp ON d.id = dmp.designation_id AND dmp.can_view = true
+            WHERE d.id = $1
+            GROUP BY d.name
+          `, [user.designation_id]);
+
+          console.log('User details query result:', {
+            success: detailsResult.success,
+            hasData: detailsResult.data && detailsResult.data.length > 0
+          });
+
+          const details = detailsResult.data?.[0] || { designation_name: null, permissions: [] };
+
+          console.log('Authentication successful for:', credentials.username);
+
+          return {
+            id: user.id.toString(),
+            employee_id: user.employee_id,
+            first_name: user.first_name,
+            last_name: user.last_name,
+            email: user.email || undefined,
+            designation: {
+              id: user.designation_id,
+              name: details.designation_name || ''
+            },
+            permissions: details.permissions || []
+          };
+        } catch (error) {
+          console.error('Auth error:', error);
+          return null;
+        }
+      }
+    })
+  ],
+  pages: {
+    signIn: '/login',
+    error: '/login',
+  },
+  callbacks: {
+    async jwt({ token, user }) {
+      console.log('JWT Callback:', {
+        hasUser: !!user,
+        tokenId: token?.id
+      });
+
+      if (user) {
+        token.id = user.id;
+        token.employee_id = user.employee_id;
+        token.first_name = user.first_name;
+        token.last_name = user.last_name;
+        token.email = user.email || undefined;
+        token.designation = user.designation;
+        token.permissions = user.permissions;
+      }
+      return token;
+    },
+    async session({ session, token }) {
+      console.log('Session Callback:', {
+        hasToken: !!token,
+        sessionUserId: session?.user?.id
+      });
+
+      if (token) {
+        session.user.id = token.id;
+        session.user.employee_id = token.employee_id;
+        session.user.first_name = token.first_name;
+        session.user.last_name = token.last_name;
+        session.user.email = token.email || undefined;
+        session.user.designation = token.designation;
+        session.user.permissions = token.permissions;
+      }
+      return session;
+    }
+  },
+  session: {
+    strategy: 'jwt',
+    maxAge: 24 * 60 * 60, // 24 hours
+  },
+  debug: true, // Enable debug mode
+}; 

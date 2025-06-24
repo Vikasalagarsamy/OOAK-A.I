@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { getDbPool } from '@/lib/db';
-import { AuthService } from '@/lib/auth';
+import { getServerSession } from 'next-auth';
+import { authOptions } from '@/lib/auth';
 
 interface MenuItem {
   id: number;
@@ -24,10 +25,10 @@ interface QueryResult {
 
 export async function GET(request: Request) {
   try {
-    // Get current user
-    const user = await AuthService.getCurrentUser();
+    // Get current user from session
+    const session = await getServerSession(authOptions);
     
-    if (!user || !user.designation.id) {
+    if (!session?.user?.designation?.id) {
       return NextResponse.json(
         { error: 'Not authenticated' },
         { status: 401 }
@@ -84,7 +85,7 @@ export async function GET(request: Request) {
       SELECT *
       FROM menu_tree
       ORDER BY level, sort_order, name;
-    `, [user.designation.id]) as QueryResult;
+    `, [session.user.designation.id]) as QueryResult;
 
     if (!result.rows) {
       return NextResponse.json(

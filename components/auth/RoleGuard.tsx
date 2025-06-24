@@ -24,15 +24,9 @@ export default function RoleGuard({
     if (!providedUser) {
       const fetchUser = async () => {
         try {
-          const response = await fetch('/api/auth/me', {
-            credentials: 'include',
-          });
-
-          if (response.ok) {
-            const data = await response.json();
-            if (data.success) {
-              setUser(data.user);
-            }
+          const userData = await AuthClientService.getCurrentUser();
+          if (userData) {
+            setUser(userData);
           }
         } catch (error) {
           console.error('Failed to fetch user:', error);
@@ -58,9 +52,9 @@ export default function RoleGuard({
     return fallback || null;
   }
 
-  const hasPermission = AuthClientService.hasPermission(user.permissions, requiredPermission);
+  const userHasPermission = AuthClientService.hasPermission(user.designation_id, requiredPermission);
 
-  if (!hasPermission) {
+  if (!userHasPermission) {
     return fallback || (
       <div className="p-4 bg-red-50 border border-red-200 rounded-lg">
         <p className="text-red-800 text-sm">
@@ -95,15 +89,15 @@ export function usePermissions() {
     fetchUser();
   }, []);
 
-  const hasPermission = (permission: Permission) => {
+  const checkPermission = (permission: Permission) => {
     if (!user) return false;
-    return AuthClientService.hasPermission(user.permissions, permission);
+    return AuthClientService.hasPermission(user.designation_id, permission);
   };
 
   return {
     user,
     loading,
-    hasPermission,
-    isAdmin: user?.permissions.includes(Permission.ADMIN_FULL_ACCESS) || false,
+    hasPermission: checkPermission,
+    isAdmin: user ? AuthClientService.hasPermission(user.designation_id, Permission.ADMIN_FULL_ACCESS) : false,
   };
 } 

@@ -1,4 +1,5 @@
 import { AuthUser, Permission, ROLE_PERMISSIONS } from '@/types/auth';
+import { signIn, signOut } from 'next-auth/react';
 
 export class AuthClientService {
   // Get user permissions based on designation
@@ -7,10 +8,13 @@ export class AuthClientService {
     return ROLE_PERMISSIONS[normalizedDesignation] || ROLE_PERMISSIONS['DEFAULT'];
   }
 
-  // Check if user has specific permission
-  static hasPermission(userPermissions: Permission[], requiredPermission: Permission): boolean {
-    return userPermissions.includes(Permission.ADMIN_FULL_ACCESS) || 
-           userPermissions.includes(requiredPermission);
+  // Check if user has specific permission based on designation name
+  static hasPermission(designationId: number, requiredPermission: Permission, designationName?: string): boolean {
+    if (!designationName) return false;
+    const normalizedDesignation = designationName.toUpperCase();
+    const permissions = ROLE_PERMISSIONS[normalizedDesignation] || ROLE_PERMISSIONS['DEFAULT'];
+    return permissions.includes(Permission.ADMIN_FULL_ACCESS) || 
+           permissions.includes(requiredPermission);
   }
 
   // Get current user from API
@@ -36,17 +40,18 @@ export class AuthClientService {
   // Login user
   static async login(employee_id: string, password: string): Promise<{ success: boolean; user?: AuthUser; message?: string }> {
     try {
-      const response = await fetch('/api/auth/login', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ employee_id, password }),
-        credentials: 'include',
+      const result = await signIn('credentials', {
+        username: employee_id,
+        password: password,
+        redirect: false,
       });
 
-      const data = await response.json();
-      return data;
+      if (result?.error) {
+        return { success: false, message: 'Invalid credentials' };
+      }
+
+      const user = await this.getCurrentUser();
+      return { success: true, user: user || undefined };
     } catch (error) {
       console.error('Login error:', error);
       return { success: false, message: 'Network error' };
@@ -56,12 +61,8 @@ export class AuthClientService {
   // Logout user
   static async logout(): Promise<boolean> {
     try {
-      const response = await fetch('/api/auth/logout', {
-        method: 'POST',
-        credentials: 'include',
-      });
-
-      return response.ok;
+      await signOut({ redirect: false });
+      return true;
     } catch (error) {
       console.error('Logout error:', error);
       return false;
