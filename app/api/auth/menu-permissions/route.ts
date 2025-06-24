@@ -3,6 +3,10 @@ import { getDbPool } from '@/lib/db';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 
+// Specify Node.js runtime and force dynamic rendering
+export const runtime = 'nodejs';
+export const dynamic = 'force-dynamic';
+
 interface MenuItem {
   id: number;
   name: string;
