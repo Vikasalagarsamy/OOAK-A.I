@@ -1,38 +1,35 @@
 import { NextResponse } from 'next/server'
-import { getDbPool } from '@/lib/db'
+import { getPool } from '@/lib/db'
 import { Pool } from 'pg'
 
 // GET /api/people/employees/next-id
 export async function GET() {
-  const pool: Pool = getDbPool()
+  const pool: Pool = getPool()
 
   try {
-    // Get the latest employee ID by ordering numerically
-    const result = await pool.query(`
-      SELECT employee_id 
-      FROM employees 
-      WHERE employee_id ~ '^EMP-\\d{2}-\\d{4}$'
-      ORDER BY 
-        CAST(SPLIT_PART(employee_id, '-', 2) AS INTEGER) DESC,
-        CAST(SPLIT_PART(employee_id, '-', 3) AS INTEGER) DESC 
-      LIMIT 1
-    `)
+    // Get the current year's last two digits
+    const currentYear = new Date().getFullYear().toString().slice(-2)
 
-    let nextId = 'EMP-25-0001'
-    
+    // Get the latest employee ID for the current year
+    const result = await pool.query(
+      "SELECT employee_id FROM employees WHERE employee_id LIKE $1 ORDER BY employee_id DESC LIMIT 1",
+      [`EMP-${currentYear}-%`]
+    )
+
+    let nextNumber = 1
     if (result.rows.length > 0) {
+      // Extract the sequence number from the last employee ID
       const lastId = result.rows[0].employee_id
-      const parts = lastId.split('-')
-      const prefix = parts[0]
-      const middlePart = parts[1]
-      const numericPart = parseInt(parts[2])
-      const nextNumeric = numericPart + 1
-      nextId = `${prefix}-${middlePart}-${nextNumeric.toString().padStart(4, '0')}`
+      const lastNumber = parseInt(lastId.split('-')[2])
+      nextNumber = lastNumber + 1
     }
+
+    // Format the new employee ID
+    const nextId = `EMP-${currentYear}-${nextNumber.toString().padStart(4, '0')}`
 
     return NextResponse.json({
       success: true,
-      nextId
+      employee_id: nextId
     })
   } catch (error) {
     console.error('Error generating next employee ID:', error)

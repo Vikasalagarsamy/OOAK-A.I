@@ -1,16 +1,56 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { getDbPool } from '@/lib/db'
+import { getPool } from '@/lib/db'
 import { Pool } from 'pg'
+
+// GET /api/departments/[id]
+export async function GET(
+  request: NextRequest,
+  { params }: { params: { id: string } }
+) {
+  const pool: Pool = getPool()
+
+  try {
+    const result = await pool.query(
+      `SELECT 
+        d.*,
+        COUNT(e.id) as employee_count
+      FROM departments d
+      LEFT JOIN employees e ON d.id = e.department_id
+      WHERE d.id = $1
+      GROUP BY d.id`,
+      [params.id]
+    )
+
+    if (result.rows.length === 0) {
+      return NextResponse.json(
+        { success: false, error: 'Department not found' },
+        { status: 404 }
+      )
+    }
+
+    return NextResponse.json({
+      success: true,
+      department: result.rows[0]
+    })
+  } catch (error) {
+    console.error('Error fetching department:', error)
+    return NextResponse.json(
+      { success: false, error: 'Failed to fetch department' },
+      { status: 500 }
+    )
+  }
+}
 
 // PUT /api/departments/[id]
 export async function PUT(
   request: NextRequest,
   { params }: { params: { id: string } }
 ) {
-  const pool: Pool = getDbPool()
+  const pool: Pool = getPool()
 
   try {
-    const { name, description } = await request.json()
+    const body = await request.json()
+    const { name, description } = body
 
     // Validate required fields
     if (!name) {
@@ -21,14 +61,14 @@ export async function PUT(
     }
 
     const result = await pool.query(
-      `UPDATE departments
-       SET name = $1, description = $2, updated_at = CURRENT_TIMESTAMP
+      `UPDATE departments 
+       SET name = $1, description = $2, updated_at = NOW()
        WHERE id = $3
-       RETURNING id, name, description, created_at, updated_at`,
+       RETURNING *`,
       [name, description, params.id]
     )
 
-    if (result.rowCount === 0) {
+    if (result.rows.length === 0) {
       return NextResponse.json(
         { success: false, error: 'Department not found' },
         { status: 404 }
@@ -53,7 +93,7 @@ export async function DELETE(
   request: NextRequest,
   { params }: { params: { id: string } }
 ) {
-  const pool: Pool = getDbPool()
+  const pool: Pool = getPool()
 
   try {
     // Check if the department has any designations

@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { getDbPool } from '@/lib/db';
+import { getPool } from '@/lib/db';
 import { AuthService } from '@/lib/auth';
 import { QueryResult } from 'pg';
 
@@ -42,7 +42,7 @@ export async function GET(request: Request) {
       );
     }
 
-    const pool = getDbPool();
+    const pool = getPool();
     
     // Get menu permissions for the specified designation
     const result = await pool.query<MenuItem>(`
@@ -162,7 +162,7 @@ export async function POST(request: Request) {
       );
     }
 
-    const pool = getDbPool();
+    const pool = getPool();
     
     // Start a transaction
     const client = await pool.connect();
