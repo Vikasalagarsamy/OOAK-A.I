@@ -6,11 +6,16 @@ import { jwtVerify, SignJWT } from 'jose';
 import { NextAuthOptions } from 'next-auth';
 import CredentialsProvider from 'next-auth/providers/credentials';
 
+// Ensure we have a secret for NextAuth
+if (!process.env.NEXTAUTH_SECRET && process.env.NODE_ENV === 'production') {
+  throw new Error('NEXTAUTH_SECRET must be set in production');
+}
+
 // Use NEXTAUTH_SECRET for both NextAuth and JWT
 const JWT_SECRET = new TextEncoder().encode(
   process.env.NEXTAUTH_SECRET || 
   process.env.JWT_SECRET || 
-  'your-secret-key'
+  'development-secret-key'
 );
 
 const JWT_EXPIRES_IN = '7d';
@@ -293,6 +298,11 @@ export async function signToken(payload: JWTPayload): Promise<string> {
 }
 
 export const authOptions: NextAuthOptions = {
+  secret: process.env.NEXTAUTH_SECRET,
+  session: {
+    strategy: 'jwt',
+    maxAge: 7 * 24 * 60 * 60, // 7 days
+  },
   providers: [
     CredentialsProvider({
       name: 'Credentials',
@@ -430,10 +440,6 @@ export const authOptions: NextAuthOptions = {
       }
       return session;
     }
-  },
-  session: {
-    strategy: 'jwt',
-    maxAge: 24 * 60 * 60, // 24 hours
   },
   debug: true, // Enable debug mode
 }; 
