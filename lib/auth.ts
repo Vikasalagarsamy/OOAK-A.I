@@ -6,7 +6,13 @@ import { jwtVerify, SignJWT } from 'jose';
 import { NextAuthOptions } from 'next-auth';
 import CredentialsProvider from 'next-auth/providers/credentials';
 
-const JWT_SECRET = new TextEncoder().encode(process.env.JWT_SECRET || 'your-secret-key');
+// Use NEXTAUTH_SECRET for both NextAuth and JWT
+const JWT_SECRET = new TextEncoder().encode(
+  process.env.NEXTAUTH_SECRET || 
+  process.env.JWT_SECRET || 
+  'your-secret-key'
+);
+
 const JWT_EXPIRES_IN = '7d';
 const COOKIE_NAME = 'ooak_auth_token';
 
